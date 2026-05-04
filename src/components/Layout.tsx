@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Package, Wallet, CalendarDays, ChefHat } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Package, Wallet, CalendarDays, ChefHat, BarChart3 } from 'lucide-react';
 import logoUrl from '../assets/logo.png';
 import './Layout.css';
 
@@ -8,11 +8,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <div className="layout-container">
       <aside className="sidebar glass">
-        <div className="sidebar-header">
-          <div className="logo-container" style={{ padding: 0, overflow: 'hidden', background: 'none' }}>
-            <img src={logoUrl} alt="Vasito Club" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        <div className="sidebar-header" style={{ paddingBottom: '1rem' }}>
+          <div className="logo-container" style={{ padding: 0, overflow: 'hidden', background: 'transparent', boxShadow: 'none' }}>
+            <img src={logoUrl} alt="Vasito Club" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
           </div>
-          <h2>Vasito Club</h2>
         </div>
         
         <nav className="sidebar-nav">
@@ -39,6 +38,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <NavLink to="/recipes" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             <ChefHat size={20} />
             <span>Recetas</span>
+          </NavLink>
+          <NavLink to="/reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <BarChart3 size={20} />
+            <span>Reportes</span>
           </NavLink>
         </nav>
       </aside>

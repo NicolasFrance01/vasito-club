@@ -8,13 +8,14 @@ datasource db {
 }
 
 model CatalogItem {
-  id          String      @id @default(uuid())
-  name        String
-  image       String
-  ingredients String[]
-  price       Float
-  promo       String?
-  orderItems  OrderItem[]
+  id              String      @id @default(uuid())
+  name            String
+  coverImage      String?     @db.Text
+  carouselImages  String[]    
+  ingredients     String[]
+  price           Float
+  promo           String?
+  orderItems      OrderItem[]
 }
 
 model Order {

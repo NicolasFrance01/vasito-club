@@ -23,7 +23,8 @@ export interface Order {
 export interface CatalogItem {
   id: string;
   name: string;
-  image: string;
+  coverImage?: string;
+  carouselImages: string[];
   ingredients: string[];
   price: number;
   promo?: string;

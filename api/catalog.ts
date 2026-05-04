@@ -13,9 +13,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'POST') {
     try {
-      const { name, image, ingredients, price, promo } = req.body;
+      const { name, coverImage, carouselImages, ingredients, price, promo } = req.body;
       const newItem = await prisma.catalogItem.create({
-        data: { name, image, ingredients, price, promo },
+        data: { name, coverImage, carouselImages: carouselImages || [], ingredients, price, promo },
       });
       return res.status(201).json(newItem);
     } catch (error) {

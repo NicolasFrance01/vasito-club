@@ -21,8 +21,8 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0 1.5rem 2rem 1.5rem;
-  border-bottom: 1px solid var(--border-color);
+  padding: 0 1.5rem 1rem 1.5rem;
+  justify-content: center;
 }
 
 .sidebar-header h2 {
@@ -33,13 +33,12 @@
 }
 
 .logo-container {
-  background-color: var(--sidebar-bg);
-  padding: 0.5rem;
-  border-radius: var(--radius-lg);
+  background-color: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
+  width: 150px;
 }
 
 .sidebar-nav {

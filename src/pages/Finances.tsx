@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAppData } from '../AppDataContext';
-import { PlusCircle, ArrowDownCircle } from 'lucide-react';
+import { PlusCircle, ArrowDownCircle, ArrowUpCircle, Filter, BarChart3 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import './Finances.css';
 
 const Finances: React.FC = () => {
@@ -12,6 +13,9 @@ const Finances: React.FC = () => {
   const [quantityAdded, setQuantityAdded] = useState<number | ''>('');
   const [totalCost, setTotalCost] = useState<number | ''>('');
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+
+  const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'week' | 'month' | 'custom'>('all');
+  const [customDate, setCustomDate] = useState(new Date().toISOString().slice(0, 10));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +37,25 @@ const Finances: React.FC = () => {
 
   const totalSpent = finances.reduce((sum, f) => sum + f.totalCost, 0);
 
+  // Filters logic
+  const now = new Date();
+  const filteredFinances = finances.filter(f => {
+    if (timeFilter === 'all') return true;
+    const fDate = new Date(f.date);
+    if (timeFilter === 'today') return fDate.toDateString() === now.toDateString();
+    if (timeFilter === 'week') {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(now.getDate() - 7);
+      return fDate >= oneWeekAgo && fDate <= now;
+    }
+    if (timeFilter === 'month') return fDate.getMonth() === now.getMonth() && fDate.getFullYear() === now.getFullYear();
+    if (timeFilter === 'custom') return fDate.toDateString() === new Date(customDate).toDateString();
+    return true;
+  });
+
+  const { orders } = useAppData();
+  const totalEarned = orders.reduce((sum, o) => sum + o.total, 0);
+
   return (
     <div className="finances animate-fade-in">
       <div className="dashboard-header">
@@ -46,25 +69,63 @@ const Finances: React.FC = () => {
         </button>
       </div>
 
-      <div className="card stat-card" style={{ maxWidth: '400px' }}>
-        <div className="stat-icon bg-accent">
-          <ArrowDownCircle size={24} color="var(--danger-color)" />
+      <div className="stats-grid" style={{ marginBottom: '2rem' }}>
+        <div className="card stat-card">
+          <div className="stat-icon bg-green">
+            <ArrowUpCircle size={24} color="var(--success-color)" />
+          </div>
+          <div className="stat-info">
+            <p className="text-gray">Total Histórico Vendido</p>
+            <h3 style={{ color: 'var(--success-color)' }}>${totalEarned.toLocaleString()}</h3>
+          </div>
         </div>
-        <div className="stat-info">
-          <p className="text-gray">Total Gastado en Insumos</p>
-          <h3 style={{ color: 'var(--danger-color)' }}>${totalSpent.toLocaleString()}</h3>
+
+        <div className="card stat-card">
+          <div className="stat-icon bg-accent">
+            <ArrowDownCircle size={24} color="var(--danger-color)" />
+          </div>
+          <div className="stat-info">
+            <p className="text-gray">Total Gastado en Insumos</p>
+            <h3 style={{ color: 'var(--danger-color)' }}>${totalSpent.toLocaleString()}</h3>
+          </div>
         </div>
+
+        <Link to="/reports" className="card stat-card" style={{ cursor: 'pointer', textDecoration: 'none', background: 'var(--bg-color)', border: '1px solid var(--accent-color)' }}>
+          <div className="stat-icon" style={{ background: 'var(--accent-color)' }}>
+            <BarChart3 size={24} color="white" />
+          </div>
+          <div className="stat-info">
+            <h3 style={{ color: 'var(--accent-color)' }}>Ver Reportes Detallados</h3>
+            <p className="text-gray">Gráficos de ventas y métricas avanzadas.</p>
+          </div>
+        </Link>
       </div>
 
       <div className="card mt-2">
-        <h2 className="text-xl" style={{ marginBottom: '1.5rem' }}>Historial de Compras</h2>
+        <div className="dashboard-header" style={{ marginBottom: '1.5rem' }}>
+          <h2 className="text-xl">Historial de Compras</h2>
+          <div className="filters flex items-center gap-2">
+            <Filter size={18} color="var(--text-secondary)" />
+            <select className="input" value={timeFilter} onChange={e => setTimeFilter(e.target.value as any)}>
+              <option value="all">Todo Histórico</option>
+              <option value="today">Hoy</option>
+              <option value="week">Últimos 7 días</option>
+              <option value="month">Este Mes</option>
+              <option value="custom">Fecha Específica</option>
+            </select>
+            {timeFilter === 'custom' && (
+              <input type="date" className="input" value={customDate} onChange={e => setCustomDate(e.target.value)} />
+            )}
+          </div>
+        </div>
+        
         <div className="finances-list">
-          {finances.length === 0 ? (
+          {filteredFinances.length === 0 ? (
             <div className="empty-state">
               <p>No tienes compras registradas aún.</p>
             </div>
           ) : (
-            finances.map(record => {
+            filteredFinances.map(record => {
               const item = stock.find(s => s.id === record.ingredientId);
               return (
                 <div key={record.id} className="finance-item">
