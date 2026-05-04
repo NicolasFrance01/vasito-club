@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Package, Wallet, CalendarDays, IceCream2, ChefHat } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Package, Wallet, CalendarDays, ChefHat } from 'lucide-react';
 import logoUrl from '../assets/logo.png';
 import './Layout.css';
 
