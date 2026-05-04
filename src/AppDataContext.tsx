@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { Order, CatalogItem, StockItem, FinanceRecord, Customer } from './types';
+import type { Order, CatalogItem, StockItem, FinanceRecord, Customer, Recipe } from './types';
 
 interface AppDataState {
   orders: Order[];
@@ -13,6 +13,8 @@ interface AppDataState {
   updateStock: (id: string, quantity: number) => Promise<void>;
   addStockItem: (item: Omit<StockItem, 'id'>) => Promise<void>;
   addFinanceRecord: (record: FinanceRecord) => Promise<void>;
+  recipes: Recipe[];
+  addRecipe: (recipe: Omit<Recipe, 'id'>) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -24,17 +26,19 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [stock, setStock] = useState<StockItem[]>([]);
   const [finances, setFinances] = useState<FinanceRecord[]>([]);
   const [customers, ] = useState<Customer[]>([]);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch initial data from DB
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [ordersRes, catalogRes, stockRes, financesRes] = await Promise.all([
+        const [ordersRes, catalogRes, stockRes, financesRes, recipesRes] = await Promise.all([
           fetch('/api/orders').then(res => res.json()),
           fetch('/api/catalog').then(res => res.json()),
           fetch('/api/stock').then(res => res.json()),
-          fetch('/api/finances').then(res => res.json())
+          fetch('/api/finances').then(res => res.json()),
+          fetch('/api/recipes').then(res => res.json())
         ]);
         
         // Handle cases where api doesn't return arrays yet (e.g. running just vite dev without vercel)
@@ -42,6 +46,7 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (Array.isArray(catalogRes)) setCatalog(catalogRes);
         if (Array.isArray(stockRes)) setStock(stockRes);
         if (Array.isArray(financesRes)) setFinances(financesRes);
+        if (Array.isArray(recipesRes)) setRecipes(recipesRes);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -148,10 +153,26 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  const addRecipe = async (recipe: Omit<Recipe, 'id'>) => {
+    try {
+      const res = await fetch('/api/recipes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(recipe)
+      });
+      if (res.ok) {
+        const newRecipe = await res.json();
+        setRecipes(prev => [newRecipe, ...prev]);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <AppDataContext.Provider value={{
-      orders, catalog, stock, finances, customers,
-      addOrder, updateOrderStatus, addCatalogItem, updateStock, addStockItem, addFinanceRecord, isLoading
+      orders, catalog, stock, finances, customers, recipes,
+      addOrder, updateOrderStatus, addCatalogItem, updateStock, addStockItem, addFinanceRecord, addRecipe, isLoading
     }}>
       {children}
     </AppDataContext.Provider>

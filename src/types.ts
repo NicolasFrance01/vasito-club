@@ -51,3 +51,18 @@ export interface Customer {
   phone: string;
   ordersCount: number;
 }
+
+export interface RecipeIngredient {
+  id: string;
+  recipeId: string;
+  stockItemId: string;
+  quantity: number;
+  stockItem?: StockItem;
+}
+
+export interface Recipe {
+  id: string;
+  name: string;
+  preparation: string;
+  ingredients: RecipeIngredient[];
+}

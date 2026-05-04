@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Package, Wallet, CalendarDays, IceCream2 } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Package, Wallet, CalendarDays, IceCream2, ChefHat } from 'lucide-react';
 import './Layout.css';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -34,6 +34,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <NavLink to="/calendar" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             <CalendarDays size={20} />
             <span>Calendario</span>
+          </NavLink>
+          <NavLink to="/recipes" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <ChefHat size={20} />
+            <span>Recetas</span>
           </NavLink>
         </nav>
       </aside>

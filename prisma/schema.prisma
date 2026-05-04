@@ -47,6 +47,7 @@ model StockItem {
   unit        String
   minQuantity Float
   finances    FinanceRecord[]
+  recipeIngredients RecipeIngredient[]
 }
 
 model FinanceRecord {
@@ -64,4 +65,21 @@ model Customer {
   phone       String?  @unique
   ordersCount Int      @default(0)
   createdAt   DateTime @default(now())
+}
+
+model Recipe {
+  id          String   @id @default(uuid())
+  name        String
+  preparation String   @db.Text
+  ingredients RecipeIngredient[]
+  createdAt   DateTime @default(now())
+}
+
+model RecipeIngredient {
+  id          String   @id @default(uuid())
+  recipeId    String
+  stockItemId String
+  quantity    Float
+  recipe      Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  stockItem   StockItem @relation(fields: [stockItemId], references: [id], onDelete: Restrict)
 }

@@ -6,6 +6,7 @@ import Catalog from './pages/Catalog';
 import Stock from './pages/Stock';
 import Finances from './pages/Finances';
 import CalendarView from './pages/CalendarView';
+import Recipes from './pages/Recipes';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/stock" element={<Stock />} />
           <Route path="/finances" element={<Finances />} />
           <Route path="/calendar" element={<CalendarView />} />
+          <Route path="/recipes" element={<Recipes />} />
         </Routes>
       </Layout>
     </Router>
