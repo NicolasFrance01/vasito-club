@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAppData } from '../AppDataContext';
-import { PlusCircle, Image as ImageIcon, ChevronLeft, ChevronRight, Trash2, Tag } from 'lucide-react';
+import { PlusCircle, Image as ImageIcon, ChevronLeft, ChevronRight, Trash2, Tag, Edit } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
-import type { PromoType } from '../types';
+import type { PromoType, CatalogItem } from '../types';
 import './Catalog.css';
 
 const Catalog: React.FC = () => {
-  const { catalog, addCatalogItem, isLoading } = useAppData();
+  const { catalog, addCatalogItem, updateCatalogItem, isLoading } = useAppData();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editItemId, setEditItemId] = useState<string | null>(null);
   
   const [name, setName] = useState('');
   const [coverImage, setCoverImage] = useState<File | null>(null);
@@ -16,6 +17,7 @@ const Catalog: React.FC = () => {
   const [ingredients, setIngredients] = useState('');
   const [price, setPrice] = useState<number | ''>('');
   const [promos, setPromos] = useState<PromoType[]>([]);
+  const [originalItem, setOriginalItem] = useState<CatalogItem | null>(null);
   
   // State for carousel navigation per item
   const [activeImageIndex, setActiveImageIndex] = useState<Record<string, number>>({});
@@ -53,18 +55,44 @@ const Catalog: React.FC = () => {
       }
     }
 
-    await addCatalogItem({
-      id: '', // Will be assigned by backend
+    const itemData: CatalogItem = {
+      id: editItemId || '', // Backend will assign a new UUID if empty string and creating
       name,
-      coverImage: coverBase64 || undefined,
-      carouselImages: carouselBase64,
+      coverImage: coverBase64 || originalItem?.coverImage || undefined,
+      carouselImages: carouselBase64.length > 0 ? carouselBase64 : (originalItem?.carouselImages || []),
       ingredients: ingredients.split(',').map(i => i.trim()).filter(i => i),
       price: Number(price),
       promos: promos.length > 0 ? promos : undefined
-    } as any);
+    };
+
+    if (editItemId) {
+      await updateCatalogItem(itemData);
+    } else {
+      await addCatalogItem(itemData);
+    }
     
     setIsModalOpen(false);
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setEditItemId(null);
+    setOriginalItem(null);
     setName(''); setCoverImage(null); setCarouselFiles(null); setIngredients(''); setPrice(''); setPromos([]);
+  };
+
+  const openEditModal = (item: CatalogItem) => {
+    setEditItemId(item.id);
+    setOriginalItem(item);
+    setName(item.name);
+    setPrice(item.price);
+    setIngredients(item.ingredients.join(', '));
+    setPromos(item.promos || []);
+    // Note: files cannot be prepopulated due to browser security. 
+    // They will remain as they were in DB if no new files are uploaded.
+    setCoverImage(null);
+    setCarouselFiles(null);
+    setIsModalOpen(true);
   };
 
   const handleAddPromo = () => {
@@ -90,7 +118,7 @@ const Catalog: React.FC = () => {
           <h1 className="text-2xl">Catálogo de Postres</h1>
           <p className="text-gray">Gestiona los productos que ofreces a tus clientes.</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
+        <button className="btn btn-primary" onClick={() => { resetForm(); setIsModalOpen(true); }}>
           <PlusCircle size={20} />
           Nuevo Postre
         </button>
@@ -132,8 +160,16 @@ const Catalog: React.FC = () => {
                   </>
                 )}
               </div>
-              <div className="catalog-info">
-                <h3>{item.name}</h3>
+              <div className="catalog-info" style={{ position: 'relative' }}>
+                <button 
+                  className="btn icon-btn" 
+                  style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'var(--bg-color)' }}
+                  onClick={() => openEditModal(item)}
+                  title="Editar Postre"
+                >
+                  <Edit size={16} />
+                </button>
+                <h3 style={{ paddingRight: '2rem' }}>{item.name}</h3>
                 <p className="price">${item.price.toLocaleString()}</p>
                 <p className="ingredients text-sm text-gray">
                   {item.ingredients.join(', ')}
@@ -162,8 +198,8 @@ const Catalog: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-content animate-fade-in" style={{ maxWidth: '500px' }}>
             <div className="modal-header">
-              <h2>Agregar Postre</h2>
-              <button onClick={() => setIsModalOpen(false)} className="close-btn">×</button>
+              <h2>{editItemId ? 'Editar Postre' : 'Agregar Postre'}</h2>
+              <button onClick={() => { setIsModalOpen(false); resetForm(); }} className="close-btn">×</button>
             </div>
             <form onSubmit={handleSubmit} className="modal-body">
               <div className="input-group">
@@ -180,10 +216,12 @@ const Catalog: React.FC = () => {
               </div>
               <div className="input-group">
                 <label>Foto de Portada</label>
+                {editItemId && <span className="text-xs text-gray ml-2">(Sube una nueva para reemplazar la actual)</span>}
                 <input type="file" className="input" accept="image/*" onChange={e => setCoverImage(e.target.files?.[0] || null)} />
               </div>
               <div className="input-group">
                 <label>Fotos de Galería (Carrusel)</label>
+                {editItemId && <span className="text-xs text-gray ml-2">(Sube nuevas para reemplazar el carrusel actual)</span>}
                 <input type="file" className="input" accept="image/*" multiple onChange={e => setCarouselFiles(e.target.files)} />
                 <span className="text-sm text-gray mt-2">Puedes seleccionar múltiples archivos.</span>
               </div>
@@ -205,8 +243,8 @@ const Catalog: React.FC = () => {
               </div>
 
               <div className="modal-footer" style={{ padding: '1rem 0 0 0' }}>
-                <button type="button" className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancelar</button>
-                <button type="submit" className="btn btn-primary">Guardar</button>
+                <button type="button" className="btn btn-secondary" onClick={() => { setIsModalOpen(false); resetForm(); }}>Cancelar</button>
+                <button type="submit" className="btn btn-primary">{editItemId ? 'Actualizar' : 'Guardar'}</button>
               </div>
             </form>
           </div>

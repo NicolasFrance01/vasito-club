@@ -10,6 +10,7 @@ interface AppDataState {
   addOrder: (order: Order) => Promise<void>;
   updateOrderStatus: (id: string, status: Order['status']) => Promise<void>;
   addCatalogItem: (item: CatalogItem) => Promise<void>;
+  updateCatalogItem: (item: CatalogItem) => Promise<void>;
   updateStock: (id: string, quantity: number) => Promise<void>;
   addStockItem: (item: Omit<StockItem, 'id'>) => Promise<void>;
   addFinanceRecord: (record: FinanceRecord) => Promise<void>;
@@ -104,6 +105,22 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  const updateCatalogItem = async (item: CatalogItem) => {
+    try {
+      const res = await fetch('/api/catalog', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item)
+      });
+      if (res.ok) {
+        const updatedItem = await res.json();
+        setCatalog(prev => prev.map(c => c.id === updatedItem.id ? updatedItem : c));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const updateStock = async (id: string, quantity: number) => {
     try {
       const res = await fetch('/api/stock', {
@@ -172,7 +189,7 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
   return (
     <AppDataContext.Provider value={{
       orders, catalog, stock, finances, customers, recipes,
-      addOrder, updateOrderStatus, addCatalogItem, updateStock, addStockItem, addFinanceRecord, addRecipe, isLoading
+      addOrder, updateOrderStatus, addCatalogItem, updateCatalogItem, updateStock, addStockItem, addFinanceRecord, addRecipe, isLoading
     }}>
       {children}
     </AppDataContext.Provider>

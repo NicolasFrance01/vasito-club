@@ -23,5 +23,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
+  if (req.method === 'PUT') {
+    try {
+      const { id, name, coverImage, carouselImages, ingredients, price, promos } = req.body;
+      const updatedItem = await prisma.catalogItem.update({
+        where: { id },
+        data: { name, coverImage, carouselImages, ingredients, price, promos },
+      });
+      return res.status(200).json(updatedItem);
+    } catch (error) {
+      return res.status(500).json({ error: 'Failed to update catalog item' });
+    }
+  }
+
   return res.status(405).json({ message: 'Method Not Allowed' });
 }
