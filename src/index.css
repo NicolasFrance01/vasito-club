@@ -205,13 +205,13 @@ input, textarea, select {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(62, 39, 35, 0.5);
-  backdrop-filter: blur(4px);
+  background-color: rgba(62, 39, 35, 0.4); /* Leve transparencia oscura */
+  backdrop-filter: blur(8px); /* Blur para dar efecto de que está por encima */
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 1rem; /* Adds safe area on small screens */
+  padding: 2rem 1rem; /* Separación arriba/abajo de 2rem y a los costados 1rem */
 }
 
 .modal-content {
@@ -219,11 +219,13 @@ input, textarea, select {
   border-radius: var(--radius-lg);
   width: 100%;
   max-width: 650px;
-  max-height: 90vh; /* Limits height to fit within viewport */
+  max-height: calc(100vh - 4rem); /* Altura máxima restando el padding para no tocar los bordes */
+  margin: auto; /* Centrado absoluto */
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-lg);
-  overflow: hidden; /* Contains the scrollable body */
+  box-shadow: 0 20px 25px -5px rgba(62, 39, 35, 0.15), 0 10px 10px -5px rgba(62, 39, 35, 0.1); /* Sombra elegante */
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.8); /* Efecto de borde superior */
 }
 
 .modal-header {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, BookOpen, Package, Wallet, CalendarDays, IceCream2, ChefHat } from 'lucide-react';
+import logoUrl from '../assets/logo.png';
 import './Layout.css';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -8,8 +9,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <div className="layout-container">
       <aside className="sidebar glass">
         <div className="sidebar-header">
-          <div className="logo-container">
-            <IceCream2 size={32} color="var(--accent-color)" />
+          <div className="logo-container" style={{ padding: 0, overflow: 'hidden', background: 'none' }}>
+            <img src={logoUrl} alt="Vasito Club" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <h2>Vasito Club</h2>
         </div>
