@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAppData } from '../AppDataContext';
 import { PlusCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import './Stock.css';
@@ -80,7 +81,7 @@ const Stock: React.FC = () => {
         </div>
       </div>
 
-      {isAddModalOpen && (
+      {isAddModalOpen && createPortal(
         <div className="modal-overlay">
           <div className="modal-content animate-fade-in" style={{ maxWidth: '400px' }}>
             <div className="modal-header">
@@ -114,7 +115,8 @@ const Stock: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -3,6 +3,7 @@
 :root {
   /* Color Palette - Vasito Club */
   --bg-color: #FCFAF8; /* Cream/Beige */
+  --sidebar-bg: #F9F1EB;
   --surface-color: #FFFFFF;
   --text-primary: #3E2723; /* Dark Brown */
   --text-secondary: #795548; /* Soft Brown */
@@ -211,7 +212,7 @@ input, textarea, select {
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 2rem 1rem; /* Separación arriba/abajo de 2rem y a los costados 1rem */
+  padding: 0; /* Remove padding here, we use margin on content */
 }
 
 .modal-content {
@@ -219,11 +220,11 @@ input, textarea, select {
   border-radius: var(--radius-lg);
   width: 100%;
   max-width: 650px;
-  max-height: calc(100vh - 4rem); /* Altura máxima restando el padding para no tocar los bordes */
-  margin: auto; /* Centrado absoluto */
+  max-height: 90vh; /* Altura máxima del 90% de la pantalla */
+  margin: 5vh auto; /* 5% de margen arriba y abajo exacto, centrado horizontal */
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 25px -5px rgba(62, 39, 35, 0.15), 0 10px 10px -5px rgba(62, 39, 35, 0.1); /* Sombra elegante */
+  box-shadow: 0 25px 50px -12px rgba(62, 39, 35, 0.4); /* Sombra mucho más pronunciada */
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.8); /* Efecto de borde superior */
 }

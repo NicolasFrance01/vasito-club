@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAppData } from '../AppDataContext';
 import { PlusCircle, Image as ImageIcon } from 'lucide-react';
 import './Catalog.css';
@@ -68,7 +69,7 @@ const Catalog: React.FC = () => {
         )}
       </div>
 
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <div className="modal-overlay">
           <div className="modal-content animate-fade-in" style={{ maxWidth: '500px' }}>
             <div className="modal-header">
@@ -102,7 +103,8 @@ const Catalog: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

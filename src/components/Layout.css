@@ -6,7 +6,7 @@
 
 .sidebar {
   width: 250px;
-  background-color: var(--surface-color);
+  background-color: var(--sidebar-bg);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -33,7 +33,7 @@
 }
 
 .logo-container {
-  background-color: var(--bg-color);
+  background-color: var(--sidebar-bg);
   padding: 0.5rem;
   border-radius: var(--radius-lg);
   display: flex;

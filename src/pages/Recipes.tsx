@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAppData } from '../AppDataContext';
 import { PlusCircle, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
 import './Recipes.css';
@@ -104,7 +105,7 @@ const Recipes: React.FC = () => {
         )}
       </div>
 
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <div className="modal-overlay">
           <div className="modal-content animate-fade-in" style={{ maxWidth: '600px' }}>
             <div className="modal-header">
@@ -154,7 +155,8 @@ const Recipes: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

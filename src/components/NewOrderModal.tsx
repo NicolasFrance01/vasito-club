@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Plus, Trash2 } from 'lucide-react';
 import { useAppData } from '../AppDataContext';
 import type { Order, OrderItem, PaymentMethod } from '../types';
@@ -70,7 +71,7 @@ const NewOrderModal: React.FC<Props> = ({ onClose }) => {
     onClose();
   };
 
-  return (
+  return createPortal(
     <div className="modal-overlay">
       <div className="modal-content animate-fade-in">
         <div className="modal-header">
@@ -172,7 +173,8 @@ const NewOrderModal: React.FC<Props> = ({ onClose }) => {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
