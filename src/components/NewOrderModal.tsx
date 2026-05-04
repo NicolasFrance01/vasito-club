@@ -36,10 +36,27 @@ const NewOrderModal: React.FC<Props> = ({ onClose }) => {
     setItems(newItems);
   };
 
+  const getAppliedPromo = (catalogId: string, quantity: number) => {
+    const catItem = catalog.find(c => c.id === catalogId);
+    if (!catItem || !catItem.promos || catItem.promos.length === 0) return null;
+    
+    // Sort promos by quantity descending to apply the largest applicable promo
+    const sortedPromos = [...catItem.promos].sort((a, b) => b.quantity - a.quantity);
+    return sortedPromos.find(p => quantity >= p.quantity) || null;
+  };
+
   const calculateSubtotal = () => {
     return items.reduce((sum, item) => {
       const catItem = catalog.find(c => c.id === item.catalogId);
       if (!catItem) return sum;
+      
+      const promo = getAppliedPromo(item.catalogId, item.quantity);
+      if (promo) {
+        const promoPacks = Math.floor(item.quantity / promo.quantity);
+        const remainder = item.quantity % promo.quantity;
+        return sum + (promoPacks * promo.promoPrice) + (remainder * catItem.price);
+      }
+      
       return sum + (catItem.price * item.quantity);
     }, 0);
   };
@@ -135,26 +152,36 @@ const NewOrderModal: React.FC<Props> = ({ onClose }) => {
           <div className="form-section">
             <h3>Postres</h3>
             <div className="items-list">
-              {items.map((item, index) => (
-                <div key={index} className="item-row">
-                  <div className="input-group" style={{ flex: 3, marginBottom: 0 }}>
-                    <select className="input" value={item.catalogId} onChange={e => handleItemChange(index, 'catalogId', e.target.value)} required>
-                      <option value="">Seleccionar Postre...</option>
-                      {catalog.map(c => (
-                        <option key={c.id} value={c.id}>{c.name} - ${c.price}</option>
-                      ))}
-                    </select>
+              {items.map((item, index) => {
+                const appliedPromo = item.catalogId ? getAppliedPromo(item.catalogId, item.quantity) : null;
+                return (
+                  <div key={index} className="item-row" style={{ flexWrap: 'wrap' }}>
+                    <div className="input-group" style={{ flex: 3, minWidth: '200px', marginBottom: 0 }}>
+                      <select className="input" value={item.catalogId} onChange={e => handleItemChange(index, 'catalogId', e.target.value)} required>
+                        <option value="">Seleccionar Postre...</option>
+                        {catalog.map(c => (
+                          <option key={c.id} value={c.id}>{c.name} - ${c.price}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="input-group" style={{ flex: 1, minWidth: '80px', marginBottom: 0 }}>
+                      <input type="number" min="1" className="input" value={item.quantity} onChange={e => handleItemChange(index, 'quantity', Number(e.target.value))} required />
+                    </div>
+                    {items.length > 1 && (
+                      <button type="button" className="btn btn-danger icon-btn" onClick={() => handleRemoveItem(index)}>
+                        <Trash2 size={18} />
+                      </button>
+                    )}
+                    {appliedPromo && (
+                      <div style={{ width: '100%', marginTop: '0.25rem' }}>
+                        <span className="badge badge-ready text-xs">
+                          🎉 ¡Promo "{appliedPromo.name}" Aplicada! ({appliedPromo.quantity}x ${appliedPromo.promoPrice})
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <div className="input-group" style={{ flex: 1, marginBottom: 0 }}>
-                    <input type="number" min="1" className="input" value={item.quantity} onChange={e => handleItemChange(index, 'quantity', Number(e.target.value))} required />
-                  </div>
-                  {items.length > 1 && (
-                    <button type="button" className="btn btn-danger icon-btn" onClick={() => handleRemoveItem(index)}>
-                      <Trash2 size={18} />
-                    </button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
             <button type="button" className="btn btn-secondary mt-2" onClick={handleAddItem}>
               <Plus size={18} /> Agregar Postre

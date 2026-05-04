@@ -14,7 +14,7 @@ model CatalogItem {
   carouselImages  String[]    
   ingredients     String[]
   price           Float
-  promo           String?
+  promos          Json?
   orderItems      OrderItem[]
 }
 

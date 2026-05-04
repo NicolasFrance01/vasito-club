@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAppData } from '../AppDataContext';
-import { PlusCircle, Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PlusCircle, Image as ImageIcon, ChevronLeft, ChevronRight, Trash2, Tag } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
+import type { PromoType } from '../types';
 import './Catalog.css';
 
 const Catalog: React.FC = () => {
@@ -14,7 +15,7 @@ const Catalog: React.FC = () => {
   const [carouselFiles, setCarouselFiles] = useState<FileList | null>(null);
   const [ingredients, setIngredients] = useState('');
   const [price, setPrice] = useState<number | ''>('');
-  const [promo, setPromo] = useState('');
+  const [promos, setPromos] = useState<PromoType[]>([]);
   
   // State for carousel navigation per item
   const [activeImageIndex, setActiveImageIndex] = useState<Record<string, number>>({});
@@ -59,11 +60,25 @@ const Catalog: React.FC = () => {
       carouselImages: carouselBase64,
       ingredients: ingredients.split(',').map(i => i.trim()).filter(i => i),
       price: Number(price),
-      promo: promo || undefined
+      promos: promos.length > 0 ? promos : undefined
     } as any);
     
     setIsModalOpen(false);
-    setName(''); setCoverImage(null); setCarouselFiles(null); setIngredients(''); setPrice(''); setPromo('');
+    setName(''); setCoverImage(null); setCarouselFiles(null); setIngredients(''); setPrice(''); setPromos([]);
+  };
+
+  const handleAddPromo = () => {
+    setPromos([...promos, { name: '', quantity: 2, promoPrice: 0 }]);
+  };
+
+  const handleUpdatePromo = (index: number, field: keyof PromoType, value: any) => {
+    const newPromos = [...promos];
+    newPromos[index] = { ...newPromos[index], [field]: value };
+    setPromos(newPromos);
+  };
+
+  const handleRemovePromo = (index: number) => {
+    setPromos(promos.filter((_, i) => i !== index));
   };
 
   if (isLoading) return <div className="p-4">Cargando catálogo...</div>;
@@ -94,7 +109,12 @@ const Catalog: React.FC = () => {
             <div key={item.id} className="card catalog-card">
               <div className="catalog-image" style={{ backgroundImage: `url(${currentImage})`, position: 'relative' }}>
                 {allImages.length === 0 && <ImageIcon size={48} color="var(--text-secondary)" />}
-                {item.promo && <div className="promo-badge">{item.promo}</div>}
+                {item.promos && item.promos.length > 0 && (
+                  <div className="promo-badge">
+                    <Tag size={12} style={{ display: 'inline', marginRight: '4px' }}/>
+                    {item.promos.length} Promo{item.promos.length > 1 ? 's' : ''}
+                  </div>
+                )}
                 
                 {allImages.length > 1 && (
                   <>
@@ -118,6 +138,15 @@ const Catalog: React.FC = () => {
                 <p className="ingredients text-sm text-gray">
                   {item.ingredients.join(', ')}
                 </p>
+                {item.promos && item.promos.length > 0 && (
+                  <div className="catalog-promos mt-2">
+                    {item.promos.map((p, i) => (
+                      <span key={i} className="text-xs badge badge-prep" style={{ display: 'inline-block', marginRight: '4px', marginBottom: '4px' }}>
+                        {p.name}: {p.quantity}x ${p.promoPrice}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -158,10 +187,23 @@ const Catalog: React.FC = () => {
                 <input type="file" className="input" accept="image/*" multiple onChange={e => setCarouselFiles(e.target.files)} />
                 <span className="text-sm text-gray mt-2">Puedes seleccionar múltiples archivos.</span>
               </div>
-              <div className="input-group">
-                <label>Promoción (Opcional)</label>
-                <input type="text" className="input" value={promo} onChange={e => setPromo(e.target.value)} placeholder="Ej: 2x $5000" />
+              
+              <div className="form-section mt-4">
+                <h3>Promociones (Opcional)</h3>
+                <p className="text-sm text-gray mb-2">Las promos se aplicarán automáticamente si el cliente pide la cantidad exacta o más.</p>
+                {promos.map((promo, index) => (
+                  <div key={index} className="promo-row flex gap-2 items-center mb-2" style={{ background: 'var(--bg-color)', padding: '0.5rem', borderRadius: 'var(--radius-md)' }}>
+                    <input type="text" className="input flex-2" placeholder="Nombre (ej: Promo Verano)" value={promo.name} onChange={e => handleUpdatePromo(index, 'name', e.target.value)} required />
+                    <input type="number" className="input flex-1" placeholder="Cant." min="2" value={promo.quantity} onChange={e => handleUpdatePromo(index, 'quantity', Number(e.target.value))} required title="Cantidad Requerida" />
+                    <input type="number" className="input flex-1" placeholder="Precio $" min="0" value={promo.promoPrice} onChange={e => handleUpdatePromo(index, 'promoPrice', Number(e.target.value))} required title="Precio Promocional Total" />
+                    <button type="button" className="btn btn-danger icon-btn" onClick={() => handleRemovePromo(index)}><Trash2 size={16}/></button>
+                  </div>
+                ))}
+                <button type="button" className="btn btn-secondary mt-2" onClick={handleAddPromo} style={{ fontSize: '0.85rem' }}>
+                  + Añadir Promo
+                </button>
               </div>
+
               <div className="modal-footer" style={{ padding: '1rem 0 0 0' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancelar</button>
                 <button type="submit" className="btn btn-primary">Guardar</button>

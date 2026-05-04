@@ -20,6 +20,12 @@ export interface Order {
   total: number;
 }
 
+export interface PromoType {
+  name: string;
+  quantity: number;
+  promoPrice: number;
+}
+
 export interface CatalogItem {
   id: string;
   name: string;
@@ -27,7 +33,7 @@ export interface CatalogItem {
   carouselImages: string[];
   ingredients: string[];
   price: number;
-  promo?: string;
+  promos?: PromoType[];
 }
 
 export interface StockItem {
