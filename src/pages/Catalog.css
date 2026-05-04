@@ -1,0 +1,71 @@
+.catalog {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.catalog-card {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition);
+}
+
+.catalog-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-color);
+}
+
+.catalog-image {
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--bg-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.promo-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: var(--accent-color);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 0.8rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.catalog-info {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.catalog-info h3 {
+  font-size: 1.25rem;
+  color: var(--text-primary);
+}
+
+.catalog-info .price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.catalog-info .ingredients {
+  margin-top: 0.5rem;
+}

@@ -1,0 +1,35 @@
+.finances {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.finances-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.finance-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.finance-item:last-child {
+  border-bottom: none;
+}
+
+.f-date {
+  flex: 1;
+}
+
+.f-desc {
+  flex: 3;
+}
+
+.f-amount {
+  flex: 1;
+  text-align: right;
+  font-size: 1.1rem;
+}

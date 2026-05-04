@@ -11,6 +11,7 @@ interface AppDataState {
   updateOrderStatus: (id: string, status: Order['status']) => Promise<void>;
   addCatalogItem: (item: CatalogItem) => Promise<void>;
   updateStock: (id: string, quantity: number) => Promise<void>;
+  addStockItem: (item: Omit<StockItem, 'id'>) => Promise<void>;
   addFinanceRecord: (record: FinanceRecord) => Promise<void>;
   isLoading: boolean;
 }
@@ -131,10 +132,26 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  const addStockItem = async (item: Omit<StockItem, 'id'>) => {
+    try {
+      const res = await fetch('/api/stock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item)
+      });
+      if (res.ok) {
+        const newItem = await res.json();
+        setStock(prev => [...prev, newItem]);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <AppDataContext.Provider value={{
       orders, catalog, stock, finances, customers,
-      addOrder, updateOrderStatus, addCatalogItem, updateStock, addFinanceRecord, isLoading
+      addOrder, updateOrderStatus, addCatalogItem, updateStock, addStockItem, addFinanceRecord, isLoading
     }}>
       {children}
     </AppDataContext.Provider>
