@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model CatalogItem {
+  id          String      @id @default(uuid())
+  name        String
+  image       String
+  ingredients String[]
+  price       Float
+  promo       String?
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  customerName  String
+  phone         String?
+  address       String?
+  delivery      Boolean     @default(false)
+  deliveryCost  Float       @default(0)
+  date          DateTime    @default(now())
+  paymentMethod String      @default("Efectivo")
+  status        String      @default("Pendiente")
+  total         Float
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id            String      @id @default(uuid())
+  orderId       String
+  catalogId     String
+  quantity      Int
+  order         Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  catalogItem   CatalogItem @relation(fields: [catalogId], references: [id], onDelete: Restrict)
+}
+
+model StockItem {
+  id          String          @id @default(uuid())
+  name        String
+  quantity    Float
+  unit        String
+  minQuantity Float
+  finances    FinanceRecord[]
+}
+
+model FinanceRecord {
+  id            String    @id @default(uuid())
+  date          DateTime  @default(now())
+  ingredientId  String
+  quantityAdded Float
+  totalCost     Float
+  stockItem     StockItem @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+}
+
+model Customer {
+  id          String   @id @default(uuid())
+  name        String
+  phone       String?  @unique
+  ordersCount Int      @default(0)
+  createdAt   DateTime @default(now())
+}
