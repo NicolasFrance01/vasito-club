@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Plus, Trash2 } from 'lucide-react';
 import { useAppData } from '../AppDataContext';
-import { Order, OrderItem, PaymentMethod } from '../types';
+import type { Order, OrderItem, PaymentMethod } from '../types';
 import './NewOrderModal.css';
 
 interface Props {

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Order, CatalogItem, StockItem, FinanceRecord, Customer } from './types';
+import type { Order, CatalogItem, StockItem, FinanceRecord, Customer } from './types';
 
 interface AppDataState {
   orders: Order[];
@@ -22,7 +22,7 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [stock, setStock] = useState<StockItem[]>([]);
   const [finances, setFinances] = useState<FinanceRecord[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customers, ] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch initial data from DB

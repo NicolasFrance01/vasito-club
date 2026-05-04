@@ -5,7 +5,7 @@ import NewOrderModal from '../components/NewOrderModal';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
-  const { orders, catalog } = useAppData();
+  const { orders } = useAppData();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Quick stats calculations
