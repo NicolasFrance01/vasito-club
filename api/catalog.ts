@@ -36,5 +36,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
+  if (req.method === 'DELETE') {
+    try {
+      const { id } = req.query;
+      if (!id || typeof id !== 'string') {
+        return res.status(400).json({ error: 'ID is required' });
+      }
+      await prisma.catalogItem.delete({
+        where: { id },
+      });
+      return res.status(200).json({ message: 'Item deleted' });
+    } catch (error) {
+      return res.status(500).json({ error: 'Failed to delete catalog item' });
+    }
+  }
+
   return res.status(405).json({ message: 'Method Not Allowed' });
 }

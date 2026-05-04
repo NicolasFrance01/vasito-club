@@ -11,6 +11,7 @@ interface AppDataState {
   updateOrderStatus: (id: string, status: Order['status']) => Promise<void>;
   addCatalogItem: (item: CatalogItem) => Promise<void>;
   updateCatalogItem: (item: CatalogItem) => Promise<void>;
+  deleteCatalogItem: (id: string) => Promise<void>;
   updateStock: (id: string, quantity: number) => Promise<void>;
   addStockItem: (item: Omit<StockItem, 'id'>) => Promise<void>;
   addFinanceRecord: (record: FinanceRecord) => Promise<void>;
@@ -121,6 +122,19 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  const deleteCatalogItem = async (id: string) => {
+    try {
+      const res = await fetch(`/api/catalog?id=${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setCatalog(prev => prev.filter(c => c.id !== id));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const updateStock = async (id: string, quantity: number) => {
     try {
       const res = await fetch('/api/stock', {
@@ -189,7 +203,7 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
   return (
     <AppDataContext.Provider value={{
       orders, catalog, stock, finances, customers, recipes,
-      addOrder, updateOrderStatus, addCatalogItem, updateCatalogItem, updateStock, addStockItem, addFinanceRecord, addRecipe, isLoading
+      addOrder, updateOrderStatus, addCatalogItem, updateCatalogItem, deleteCatalogItem, updateStock, addStockItem, addFinanceRecord, addRecipe, isLoading
     }}>
       {children}
     </AppDataContext.Provider>

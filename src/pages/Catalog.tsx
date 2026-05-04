@@ -7,7 +7,7 @@ import type { PromoType, CatalogItem } from '../types';
 import './Catalog.css';
 
 const Catalog: React.FC = () => {
-  const { catalog, addCatalogItem, updateCatalogItem, isLoading } = useAppData();
+  const { catalog, addCatalogItem, updateCatalogItem, deleteCatalogItem, isLoading } = useAppData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editItemId, setEditItemId] = useState<string | null>(null);
   
@@ -109,6 +109,12 @@ const Catalog: React.FC = () => {
     setPromos(promos.filter((_, i) => i !== index));
   };
 
+  const handleDelete = async (id: string, name: string) => {
+    if (window.confirm(`¿Estás seguro de que deseas eliminar "${name}" del catálogo? Esta acción no se puede deshacer.`)) {
+      await deleteCatalogItem(id);
+    }
+  };
+
   if (isLoading) return <div className="p-4">Cargando catálogo...</div>;
 
   return (
@@ -169,7 +175,15 @@ const Catalog: React.FC = () => {
                 >
                   <Edit size={16} />
                 </button>
-                <h3 style={{ paddingRight: '2rem' }}>{item.name}</h3>
+                <button 
+                  className="btn icon-btn btn-danger" 
+                  style={{ position: 'absolute', top: '1rem', right: '3.5rem', background: 'var(--bg-color)' }}
+                  onClick={() => handleDelete(item.id, item.name)}
+                  title="Eliminar Postre"
+                >
+                  <Trash2 size={16} />
+                </button>
+                <h3 style={{ paddingRight: '5.5rem' }}>{item.name}</h3>
                 <p className="price">${item.price.toLocaleString()}</p>
                 <p className="ingredients text-sm text-gray">
                   {item.ingredients.join(', ')}
@@ -230,11 +244,21 @@ const Catalog: React.FC = () => {
                 <h3>Promociones (Opcional)</h3>
                 <p className="text-sm text-gray mb-2">Las promos se aplicarán automáticamente si el cliente pide la cantidad exacta o más.</p>
                 {promos.map((promo, index) => (
-                  <div key={index} className="promo-row flex gap-2 items-center mb-2" style={{ background: 'var(--bg-color)', padding: '0.5rem', borderRadius: 'var(--radius-md)' }}>
-                    <input type="text" className="input flex-2" placeholder="Nombre (ej: Promo Verano)" value={promo.name} onChange={e => handleUpdatePromo(index, 'name', e.target.value)} required />
-                    <input type="number" className="input flex-1" placeholder="Cant." min="2" value={promo.quantity} onChange={e => handleUpdatePromo(index, 'quantity', Number(e.target.value))} required title="Cantidad Requerida" />
-                    <input type="number" className="input flex-1" placeholder="Precio $" min="0" value={promo.promoPrice} onChange={e => handleUpdatePromo(index, 'promoPrice', Number(e.target.value))} required title="Precio Promocional Total" />
-                    <button type="button" className="btn btn-danger icon-btn" onClick={() => handleRemovePromo(index)}><Trash2 size={16}/></button>
+                  <div key={index} className="promo-row-modern mb-2">
+                    <div className="promo-main-inputs">
+                      <input type="text" className="input" placeholder="Nombre (ej: Promo Verano)" value={promo.name} onChange={e => handleUpdatePromo(index, 'name', e.target.value)} required />
+                    </div>
+                    <div className="promo-small-inputs">
+                      <div className="input-with-label">
+                        <label className="text-xs text-gray">Cant.</label>
+                        <input type="number" className="input" min="2" value={promo.quantity} onChange={e => handleUpdatePromo(index, 'quantity', Number(e.target.value))} required />
+                      </div>
+                      <div className="input-with-label">
+                        <label className="text-xs text-gray">Precio $</label>
+                        <input type="number" className="input" min="0" value={promo.promoPrice} onChange={e => handleUpdatePromo(index, 'promoPrice', Number(e.target.value))} required />
+                      </div>
+                      <button type="button" className="btn btn-danger icon-btn self-end" onClick={() => handleRemovePromo(index)}><Trash2 size={16}/></button>
+                    </div>
                   </div>
                 ))}
                 <button type="button" className="btn btn-secondary mt-2" onClick={handleAddPromo} style={{ fontSize: '0.85rem' }}>

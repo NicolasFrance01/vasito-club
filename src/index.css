@@ -138,8 +138,38 @@ input, textarea, select {
 }
 
 .input:focus {
+  outline: none;
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px rgba(217, 138, 75, 0.2);
+  box-shadow: 0 0 0 4px rgba(217, 138, 75, 0.1);
+}
+
+@media (max-width: 640px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .dashboard-header .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stats-grid, .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    width: 95% !important;
+    margin: 10px auto;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
 }
 
 .badge {

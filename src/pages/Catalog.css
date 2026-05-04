@@ -125,3 +125,41 @@
 .carousel-dots .dot.active {
   background: white;
 }
+
+.promo-row-modern {
+  background: var(--bg-color);
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border: 1px solid var(--border-color);
+}
+
+.promo-small-inputs {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.promo-main-inputs {
+  width: 100%;
+}
+
+.input-with-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+@media (min-width: 480px) {
+  .promo-row-modern {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+  
+  .promo-small-inputs {
+    flex: 1;
+  }
+}
