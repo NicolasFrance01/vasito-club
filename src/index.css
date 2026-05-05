@@ -107,6 +107,44 @@ input, textarea, select {
   color: white;
 }
 
+.modal-content {
+  background: var(--surface-color);
+  padding: 1.5rem; /* Reducido de 2rem */
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 500px;
+  max-height: 95vh; /* Ocupar máximo el 95% del alto */
+  overflow-y: auto; /* Permitir scroll interno */
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem; /* Reducido de 1.5rem */
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; /* Reducido de 1rem */
+}
+
+.form-section {
+  background: rgba(0, 0, 0, 0.02);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 0.5rem;
+}
+
+.form-section h3 {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
 .card {
   background-color: var(--surface-color);
   border-radius: var(--radius-lg);
