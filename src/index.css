@@ -32,6 +32,7 @@
   --radius-full: 9999px;
   
   --transition: all 0.2s ease-in-out;
+  --base-font-size: 14px;
 }
 
 * {
@@ -44,8 +45,10 @@ body {
   font-family: 'Outfit', sans-serif;
   background-color: var(--bg-color);
   color: var(--text-primary);
+  font-size: var(--base-font-size);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 button {
@@ -109,40 +112,46 @@ input, textarea, select {
 
 .modal-content {
   background: var(--surface-color);
-  padding: 1.5rem; /* Reducido de 2rem */
+  padding: 1.25rem; /* Reducido para ahorrar espacio */
   border-radius: var(--radius-lg);
-  width: 90%;
-  max-width: 500px;
-  max-height: 95vh; /* Ocupar máximo el 95% del alto */
-  overflow-y: auto; /* Permitir scroll interno */
+  width: 95%;
+  max-width: 480px;
+  max-height: 92vh;
+  overflow-y: auto;
   box-shadow: var(--shadow-lg);
   position: relative;
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem; /* Reducido de 1.5rem */
+.modal-header h2 {
+  font-size: 1.25rem;
 }
 
 .modal-body {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem; /* Reducido de 1rem */
+  gap: 0.5rem;
 }
 
-.form-section {
-  background: rgba(0, 0, 0, 0.02);
-  padding: 1rem;
-  border-radius: var(--radius-md);
+.input-group {
   margin-bottom: 0.5rem;
 }
 
-.form-section h3 {
-  font-size: 1rem;
-  margin-bottom: 0.75rem;
-  color: var(--text-primary);
+.input-group label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.6rem 0.75rem; /* Más compacto */
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: var(--transition);
+  background-color: var(--bg-color);
 }
 
 .card {
