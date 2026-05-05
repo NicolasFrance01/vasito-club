@@ -25,7 +25,7 @@ const Finances: React.FC = () => {
 
     await addFinanceRecord({
       id: '',
-      date: new Date(date).toISOString(),
+      date: date, // Keep as YYYY-MM-DD string
       ingredientId,
       quantityAdded: Number(quantityAdded),
       totalCost: Number(totalCost)
@@ -41,7 +41,7 @@ const Finances: React.FC = () => {
 
     await updateFinanceRecord({
       ...editingRecord,
-      date: new Date(date).toISOString(),
+      date: date, // Keep as YYYY-MM-DD string
       ingredientId,
       quantityAdded: Number(quantityAdded),
       totalCost: Number(totalCost)
@@ -179,7 +179,9 @@ const Finances: React.FC = () => {
               return (
                 <div key={record.id} className="finance-item">
                   <div className="f-date">
-                    <span className="text-sm text-gray">{new Date(record.date).toLocaleDateString('es-AR')}</span>
+                    <span className="text-sm text-gray">
+                      {new Date(record.date).toLocaleDateString('es-AR', { timeZone: 'UTC' })}
+                    </span>
                   </div>
                   <div className="f-desc">
                     <h4>Compra de {item?.name || 'Insumo Eliminado'}</h4>

@@ -20,7 +20,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       
       const newRecord = await prisma.financeRecord.create({
         data: {
-          date: new Date(date),
+          date: new Date(date + 'T12:00:00'), // Force noon to avoid TZ shifting
           ingredientId,
           quantityAdded,
           totalCost,
@@ -45,7 +45,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const updatedRecord = await prisma.financeRecord.update({
         where: { id: String(id) },
         data: {
-          date: date ? new Date(date) : undefined,
+          date: date ? new Date(date + 'T12:00:00') : undefined,
           ingredientId,
           quantityAdded,
           totalCost,
