@@ -13,8 +13,12 @@ interface AppDataState {
   updateCatalogItem: (item: CatalogItem) => Promise<void>;
   deleteCatalogItem: (id: string) => Promise<void>;
   updateStock: (id: string, quantity: number) => Promise<void>;
+  updateStockItem: (item: StockItem) => Promise<void>;
+  deleteStockItem: (id: string) => Promise<void>;
   addStockItem: (item: Omit<StockItem, 'id'>) => Promise<void>;
   addFinanceRecord: (record: FinanceRecord) => Promise<void>;
+  updateFinanceRecord: (record: FinanceRecord) => Promise<void>;
+  deleteFinanceRecord: (id: string) => Promise<void>;
   recipes: Recipe[];
   addRecipe: (recipe: Omit<Recipe, 'id'>) => Promise<void>;
   isLoading: boolean;
@@ -150,6 +154,35 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  const updateStockItem = async (item: StockItem) => {
+    try {
+      const res = await fetch('/api/stock', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item)
+      });
+      if (res.ok) {
+        const updatedItem = await res.json();
+        setStock(prev => prev.map(s => s.id === updatedItem.id ? updatedItem : s));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const deleteStockItem = async (id: string) => {
+    try {
+      const res = await fetch(`/api/stock?id=${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        setStock(prev => prev.filter(s => s.id !== id));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const addFinanceRecord = async (record: FinanceRecord) => {
     try {
       const res = await fetch('/api/finances', {
@@ -162,6 +195,35 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setFinances(prev => [newRecord, ...prev]);
         // Also update local stock to reflect the change
         setStock(prev => prev.map(s => s.id === record.ingredientId ? { ...s, quantity: s.quantity + record.quantityAdded } : s));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const updateFinanceRecord = async (record: FinanceRecord) => {
+    try {
+      const res = await fetch('/api/finances', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(record)
+      });
+      if (res.ok) {
+        const updatedRecord = await res.json();
+        setFinances(prev => prev.map(f => f.id === updatedRecord.id ? updatedRecord : f));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const deleteFinanceRecord = async (id: string) => {
+    try {
+      const res = await fetch(`/api/finances?id=${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        setFinances(prev => prev.filter(f => f.id !== id));
       }
     } catch (e) {
       console.error(e);
@@ -203,7 +265,7 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
   return (
     <AppDataContext.Provider value={{
       orders, catalog, stock, finances, customers, recipes,
-      addOrder, updateOrderStatus, addCatalogItem, updateCatalogItem, deleteCatalogItem, updateStock, addStockItem, addFinanceRecord, addRecipe, isLoading
+      addOrder, updateOrderStatus, addCatalogItem, updateCatalogItem, deleteCatalogItem, updateStock, updateStockItem, deleteStockItem, addStockItem, addFinanceRecord, updateFinanceRecord, deleteFinanceRecord, addRecipe, isLoading
     }}>
       {children}
     </AppDataContext.Provider>

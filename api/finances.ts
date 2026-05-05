@@ -39,5 +39,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
+  if (req.method === 'PUT') {
+    try {
+      const { id, date, ingredientId, quantityAdded, totalCost } = req.body;
+      const updatedRecord = await prisma.financeRecord.update({
+        where: { id: String(id) },
+        data: {
+          date: date ? new Date(date) : undefined,
+          ingredientId,
+          quantityAdded,
+          totalCost,
+        },
+      });
+      return res.status(200).json(updatedRecord);
+    } catch (error) {
+      return res.status(500).json({ error: 'Failed to update finance record' });
+    }
+  }
+
+  if (req.method === 'DELETE') {
+    try {
+      const { id } = req.query;
+      await prisma.financeRecord.delete({
+        where: { id: String(id) },
+      });
+      return res.status(200).json({ message: 'Finance record deleted' });
+    } catch (error) {
+      return res.status(500).json({ error: 'Failed to delete finance record' });
+    }
+  }
+
   return res.status(405).json({ message: 'Method Not Allowed' });
 }

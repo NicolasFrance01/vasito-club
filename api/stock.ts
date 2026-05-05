@@ -25,14 +25,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'PATCH') {
     try {
-      const { id, quantity } = req.body;
+      const { id, name, quantity, unit, minQuantity } = req.body;
       const updatedItem = await prisma.stockItem.update({
         where: { id: String(id) },
-        data: { quantity },
+        data: { 
+          name: name !== undefined ? name : undefined,
+          quantity: quantity !== undefined ? quantity : undefined,
+          unit: unit !== undefined ? unit : undefined,
+          minQuantity: minQuantity !== undefined ? minQuantity : undefined
+        },
       });
       return res.status(200).json(updatedItem);
     } catch (error) {
       return res.status(500).json({ error: 'Failed to update stock' });
+    }
+  }
+
+  if (req.method === 'DELETE') {
+    try {
+      const { id } = req.query;
+      await prisma.stockItem.delete({
+        where: { id: String(id) },
+      });
+      return res.status(200).json({ message: 'Stock item deleted' });
+    } catch (error) {
+      return res.status(500).json({ error: 'Failed to delete stock item' });
     }
   }
 
