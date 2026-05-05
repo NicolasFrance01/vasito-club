@@ -87,7 +87,7 @@ const CalendarView: React.FC = () => {
       <div className="calendar-grid-container">
         <div className="calendar-days-header">
           {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(d => (
-            <div key={d} className="day-name" data-short={d[0]}>{d}<span>{d.slice(1)}</span></div>
+            <div key={d} className="day-name">{d}</div>
           ))}
         </div>
         <div className="calendar-grid">

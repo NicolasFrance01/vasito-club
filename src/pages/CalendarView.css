@@ -52,12 +52,13 @@
   font-weight: 600;
   font-size: 0.85rem;
   color: var(--text-secondary);
+  text-transform: capitalize;
 }
 
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-auto-rows: minmax(120px, 1fr);
+  grid-auto-rows: 120px; /* Altura fija para evitar deformación */
 }
 
 .calendar-day {
@@ -184,17 +185,14 @@
 
 @media (max-width: 768px) {
   .calendar-grid {
-    grid-auto-rows: minmax(80px, 1fr);
+    grid-auto-rows: 100px;
   }
-  .day-name span {
-    display: none;
-  }
-  .day-name::after {
-    content: attr(data-short);
+  .day-name {
+    font-size: 0.75rem;
   }
   .event-pill {
-    height: 8px;
-    padding: 0;
-    text-indent: -9999px;
+    height: 12px;
+    padding: 0 2px;
+    font-size: 0.6rem;
   }
 }
