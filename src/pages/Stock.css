@@ -55,3 +55,37 @@
 .badge {
   gap: 0.25rem;
 }
+
+@media (max-width: 768px) {
+  .stock-header {
+    display: none; /* Ocultar cabecera en móvil */
+  }
+
+  .stock-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+
+  .col-name, .col-status, .col-qty, .col-actions {
+    width: 100%;
+    flex: none;
+    text-align: left;
+    justify-content: flex-start;
+  }
+
+  .col-actions {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed var(--border-color);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .col-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
