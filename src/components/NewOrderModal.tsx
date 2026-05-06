@@ -7,20 +7,25 @@ import './NewOrderModal.css';
 
 interface Props {
   onClose: () => void;
+  orderToEdit?: Order;
 }
 
-const NewOrderModal: React.FC<Props> = ({ onClose }) => {
-  const { catalog, addOrder } = useAppData();
+const NewOrderModal: React.FC<Props> = ({ onClose, orderToEdit }) => {
+  const { catalog, addOrder, updateOrder } = useAppData();
   
-  const [customerName, setCustomerName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
-  const [delivery, setDelivery] = useState(false);
-  const [deliveryCost, setDeliveryCost] = useState(1000);
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 16));
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Efectivo');
+  const [customerName, setCustomerName] = useState(orderToEdit?.customerName || '');
+  const [phone, setPhone] = useState(orderToEdit?.phone || '');
+  const [address, setAddress] = useState(orderToEdit?.address || '');
+  const [delivery, setDelivery] = useState(orderToEdit?.delivery || false);
+  const [deliveryCost, setDeliveryCost] = useState(orderToEdit?.deliveryCost || 1000);
   
-  const [items, setItems] = useState<OrderItem[]>([{ catalogId: '', quantity: 1 }]);
+  const initialDate = orderToEdit 
+    ? new Date(orderToEdit.date).toISOString().slice(0, 16) 
+    : new Date().toISOString().slice(0, 16);
+  const [date, setDate] = useState(initialDate);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(orderToEdit?.paymentMethod || 'Efectivo');
+  
+  const [items, setItems] = useState<OrderItem[]>(orderToEdit?.items.length ? orderToEdit.items : [{ catalogId: '', quantity: 1 }]);
 
   const handleAddItem = () => {
     setItems([...items, { catalogId: '', quantity: 1 }]);
@@ -70,8 +75,8 @@ const NewOrderModal: React.FC<Props> = ({ onClose }) => {
       return;
     }
 
-    const newOrder: Order = {
-      id: Date.now().toString(),
+    const orderData: Order = {
+      id: orderToEdit ? orderToEdit.id : Date.now().toString(),
       customerName,
       phone,
       address: delivery ? address : undefined,
@@ -80,11 +85,15 @@ const NewOrderModal: React.FC<Props> = ({ onClose }) => {
       date: new Date(date).toISOString(), // ensure ISO format
       paymentMethod,
       items: items.filter(i => i.catalogId && i.quantity > 0),
-      status: 'Pendiente',
+      status: orderToEdit ? orderToEdit.status : 'Pendiente',
       total
     };
 
-    addOrder(newOrder);
+    if (orderToEdit) {
+      updateOrder(orderData);
+    } else {
+      addOrder(orderData);
+    }
     onClose();
   };
 
@@ -92,7 +101,7 @@ const NewOrderModal: React.FC<Props> = ({ onClose }) => {
     <div className="modal-overlay">
       <div className="modal-content animate-fade-in">
         <div className="modal-header">
-          <h2>Nuevo Pedido</h2>
+          <h2>{orderToEdit ? 'Editar Pedido' : 'Nuevo Pedido'}</h2>
           <button onClick={onClose} className="close-btn"><X size={24} /></button>
         </div>
 

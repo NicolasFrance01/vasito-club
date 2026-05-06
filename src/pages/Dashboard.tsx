@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useAppData } from '../AppDataContext';
-import { PlusCircle, TrendingUp, Clock, Package } from 'lucide-react';
+import { PlusCircle, TrendingUp, Clock, Package, Edit, Trash2 } from 'lucide-react';
 import NewOrderModal from '../components/NewOrderModal';
+import type { Order } from '../types';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
-  const { orders } = useAppData();
+  const { orders, deleteOrder } = useAppData();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [orderToEdit, setOrderToEdit] = useState<Order | undefined>(undefined);
 
   // Quick stats calculations
   const todaysOrders = orders.filter(o => new Date(o.date).toDateString() === new Date().toDateString());
@@ -20,7 +22,7 @@ const Dashboard: React.FC = () => {
           <h1 className="text-2xl">Hola, Vasito Club 👋</h1>
           <p className="text-gray">Aquí tienes un resumen de tu negocio hoy.</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
+        <button className="btn btn-primary" onClick={() => { setOrderToEdit(undefined); setIsModalOpen(true); }}>
           <PlusCircle size={20} />
           Nuevo Pedido
         </button>
@@ -71,11 +73,31 @@ const Dashboard: React.FC = () => {
                     <h4>{order.customerName}</h4>
                     <p className="text-sm text-gray">{new Date(order.date).toLocaleString('es-AR')}</p>
                   </div>
-                  <div className="order-status">
+                  <div className="order-status" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <span className={`badge badge-${order.status === 'Pendiente' ? 'pending' : order.status === 'En Preparación' ? 'prep' : 'ready'}`}>
                       {order.status}
                     </span>
                     <span className="order-total">${order.total.toLocaleString()}</span>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button 
+                        className="btn btn-secondary icon-btn" 
+                        title="Editar Pedido"
+                        onClick={() => { setOrderToEdit(order); setIsModalOpen(true); }}
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button 
+                        className="btn btn-danger icon-btn" 
+                        title="Eliminar Pedido"
+                        onClick={() => {
+                          if (window.confirm('¿Estás seguro de eliminar este pedido?')) {
+                            deleteOrder(order.id);
+                          }
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -84,7 +106,7 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {isModalOpen && <NewOrderModal onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && <NewOrderModal onClose={() => setIsModalOpen(false)} orderToEdit={orderToEdit} />}
     </div>
   );
 };

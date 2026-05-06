@@ -21,6 +21,8 @@ interface AppDataState {
   deleteFinanceRecord: (id: string) => Promise<void>;
   recipes: Recipe[];
   addRecipe: (recipe: Omit<Recipe, 'id'>) => Promise<void>;
+  updateOrder: (order: Order) => Promise<void>;
+  deleteOrder: (id: string) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -88,6 +90,35 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
       if (res.ok) {
         setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const updateOrder = async (order: Order) => {
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(order)
+      });
+      if (res.ok) {
+        const updatedOrder = await res.json();
+        setOrders(prev => prev.map(o => o.id === updatedOrder.id ? updatedOrder : o));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const deleteOrder = async (id: string) => {
+    try {
+      const res = await fetch(`/api/orders?id=${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setOrders(prev => prev.filter(o => o.id !== id));
       }
     } catch (e) {
       console.error(e);
@@ -265,7 +296,7 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
   return (
     <AppDataContext.Provider value={{
       orders, catalog, stock, finances, customers, recipes,
-      addOrder, updateOrderStatus, addCatalogItem, updateCatalogItem, deleteCatalogItem, updateStock, updateStockItem, deleteStockItem, addStockItem, addFinanceRecord, updateFinanceRecord, deleteFinanceRecord, addRecipe, isLoading
+      addOrder, updateOrderStatus, updateOrder, deleteOrder, addCatalogItem, updateCatalogItem, deleteCatalogItem, updateStock, updateStockItem, deleteStockItem, addStockItem, addFinanceRecord, updateFinanceRecord, deleteFinanceRecord, addRecipe, isLoading
     }}>
       {children}
     </AppDataContext.Provider>

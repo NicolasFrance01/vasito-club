@@ -10,7 +10,9 @@ import {
   User, 
   DollarSign, 
   Package, 
-  CreditCard 
+  CreditCard,
+  Edit,
+  Trash2
 } from 'lucide-react';
 import { 
   format, 
@@ -26,13 +28,15 @@ import {
   parseISO 
 } from 'date-fns';
 import { es } from 'date-fns/locale';
+import NewOrderModal from '../components/NewOrderModal';
 import './CalendarView.css';
 
 const CalendarView: React.FC = () => {
-  const { orders, finances, stock, catalog, isLoading } = useAppData();
+  const { orders, finances, stock, catalog, isLoading, deleteOrder } = useAppData();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   if (isLoading) return <div className="p-4">Cargando calendario...</div>;
 
@@ -162,6 +166,23 @@ const CalendarView: React.FC = () => {
                       })}
                     </div>
                   </div>
+                  
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem' }}>
+                    <button className="btn btn-secondary" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} onClick={() => {
+                      setIsModalOpen(false);
+                      setIsEditModalOpen(true);
+                    }}>
+                      <Edit size={16} /> Editar
+                    </button>
+                    <button className="btn btn-danger" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} onClick={() => {
+                      if (window.confirm('¿Estás seguro de eliminar este pedido?')) {
+                        deleteOrder(selectedEvent.id);
+                        setIsModalOpen(false);
+                      }
+                    }}>
+                      <Trash2 size={16} /> Eliminar
+                    </button>
+                  </div>
                 </>
               ) : (
                 <>
@@ -190,6 +211,13 @@ const CalendarView: React.FC = () => {
           </div>
         </div>,
         document.body
+      )}
+
+      {isEditModalOpen && selectedEvent && selectedEvent.type === 'order' && (
+        <NewOrderModal 
+          onClose={() => setIsEditModalOpen(false)} 
+          orderToEdit={selectedEvent} 
+        />
       )}
     </div>
   );

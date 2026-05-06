@@ -69,5 +69,57 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
+  if (req.method === 'PUT') {
+    try {
+      const { id, customerName, phone, address, delivery, deliveryCost, date, paymentMethod, status, total, items } = req.body;
+      
+      await prisma.orderItem.deleteMany({
+        where: { orderId: String(id) }
+      });
+
+      const updatedOrder = await prisma.order.update({
+        where: { id: String(id) },
+        data: {
+          customerName,
+          phone,
+          address,
+          delivery,
+          deliveryCost,
+          date: new Date(date),
+          paymentMethod,
+          status,
+          total,
+          items: {
+            create: items.map((item: any) => ({
+              catalogId: item.catalogId,
+              quantity: item.quantity,
+            })),
+          },
+        },
+        include: { items: true },
+      });
+
+      return res.status(200).json(updatedOrder);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Failed to update order' });
+    }
+  }
+
+  if (req.method === 'DELETE') {
+    try {
+      const { id } = req.query;
+      await prisma.orderItem.deleteMany({
+        where: { orderId: String(id) }
+      });
+      await prisma.order.delete({
+        where: { id: String(id) }
+      });
+      return res.status(200).json({ success: true });
+    } catch (error) {
+      return res.status(500).json({ error: 'Failed to delete order' });
+    }
+  }
+
   return res.status(405).json({ message: 'Method Not Allowed' });
 }
