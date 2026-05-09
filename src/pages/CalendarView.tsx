@@ -28,6 +28,7 @@ import {
   parseISO 
 } from 'date-fns';
 import { es } from 'date-fns/locale';
+import type { Order } from '../types';
 import NewOrderModal from '../components/NewOrderModal';
 import './CalendarView.css';
 
