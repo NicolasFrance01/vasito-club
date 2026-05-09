@@ -44,24 +44,35 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Fetch initial data from DB
   const fetchData = async () => {
+    const safeFetch = async (url: string) => {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) return [];
+        return await res.json();
+      } catch (e) {
+        console.error(`Error fetching ${url}:`, e);
+        return [];
+      }
+    };
+
     try {
       const [ordersRes, catalogRes, stockRes, financesRes, recipesRes, revisionsRes] = await Promise.all([
-        fetch('/api/orders').then(res => res.json()),
-        fetch('/api/catalog').then(res => res.json()),
-        fetch('/api/stock').then(res => res.json()),
-        fetch('/api/finances').then(res => res.json()),
-        fetch('/api/recipes').then(res => res.json()),
-        fetch('/api/stock-revisions').then(res => res.json())
+        safeFetch('/api/orders'),
+        safeFetch('/api/catalog'),
+        safeFetch('/api/stock'),
+        safeFetch('/api/finances'),
+        safeFetch('/api/recipes'),
+        safeFetch('/api/stock-revisions')
       ]);
       
-      if (Array.isArray(ordersRes)) setOrders(ordersRes);
-      if (Array.isArray(catalogRes)) setCatalog(catalogRes);
-      if (Array.isArray(stockRes)) setStock(stockRes);
-      if (Array.isArray(financesRes)) setFinances(financesRes);
-      if (Array.isArray(recipesRes)) setRecipes(recipesRes);
-      if (Array.isArray(revisionsRes)) setRevisions(revisionsRes);
+      setOrders(Array.isArray(ordersRes) ? ordersRes : []);
+      setCatalog(Array.isArray(catalogRes) ? catalogRes : []);
+      setStock(Array.isArray(stockRes) ? stockRes : []);
+      setFinances(Array.isArray(financesRes) ? financesRes : []);
+      setRecipes(Array.isArray(recipesRes) ? recipesRes : []);
+      setRevisions(Array.isArray(revisionsRes) ? revisionsRes : []);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error in fetchData:", error);
     } finally {
       setIsLoading(false);
     }
