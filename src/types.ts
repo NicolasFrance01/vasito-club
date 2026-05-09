@@ -1,5 +1,20 @@
-export type OrderStatus = 'Pendiente' | 'En Preparación' | 'Listo' | 'Entregado' | 'Cancelado';
+export type OrderStatus = 'Pendiente' | 'En Elaboración' | 'En Envío' | 'Entregado' | 'Cancelado';
 export type PaymentMethod = 'Efectivo' | 'Transferencia';
+export type UserRole = 'admin' | 'user';
+
+export interface User {
+  id: string;
+  username: string;
+  role: UserRole;
+  createdAt: string;
+}
+
+export interface StockRevision {
+  id: string;
+  date: string;
+  details: any; // Using any for Json for now, or define a specific interface
+  notes?: string;
+}
 
 export interface OrderItem {
   catalogId: string;

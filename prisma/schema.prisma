@@ -84,3 +84,17 @@ model RecipeIngredient {
   recipe      Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   stockItem   StockItem @relation(fields: [stockItemId], references: [id], onDelete: Restrict)
 }
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  role      String   @default("user") // "admin" or "user"
+  createdAt DateTime @default(now())
+}
+
+model StockRevision {
+  id        String   @id @default(uuid())
+  date      DateTime @default(now())
+  details   Json     // List of items and their values at revision time
+  notes     String?
+}

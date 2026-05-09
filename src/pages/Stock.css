@@ -89,3 +89,29 @@
     justify-content: center;
   }
 }
+
+/* Stock Revision Modal */
+.revision-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.revision-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.revision-row label {
+  font-weight: 500;
+  flex: 1;
+}
+
+.revision-row .input {
+  width: 120px;
+  text-align: right;
+}

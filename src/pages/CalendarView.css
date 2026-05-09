@@ -34,14 +34,14 @@
   background: var(--surface-color);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
-  overflow: hidden;
+  overflow-x: auto; /* Permite scroll horizontal si es muy angosto */
   box-shadow: var(--shadow-md);
   flex-grow: 1;
 }
 
 .calendar-days-header {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(100px, 1fr));
   background: var(--bg-color);
   border-bottom: 1px solid var(--border-color);
 }
@@ -57,18 +57,18 @@
 
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  grid-auto-rows: 140px; /* Un poco más de aire */
+  grid-template-columns: repeat(7, minmax(100px, 1fr));
+  grid-auto-rows: minmax(120px, auto); /* Permite que crezca si hay muchos eventos */
 }
 
 .calendar-day {
   border-right: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
-  padding: 0.75rem 0.5rem; /* Más balanceado */
+  padding: 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  min-height: 140px;
+  gap: 0.25rem;
+  min-height: 120px;
   background-color: var(--surface-color);
   transition: background-color 0.2s;
   position: relative;
@@ -89,7 +89,7 @@
 
 .day-number {
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: var(--text-secondary);
   display: flex;
   justify-content: space-between;
@@ -97,27 +97,39 @@
   margin-bottom: 0.25rem;
 }
 
-.calendar-day.not-current-month .day-number {
-  color: #D1D1D1;
-}
-
-.calendar-day.is-today .day-number {
-  color: var(--accent-color);
+.day-events-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
 }
 
 .day-events {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
   overflow-y: auto;
-  max-height: calc(100% - 30px);
   padding-right: 2px;
 }
 
+/* Scrollbar sutil para eventos */
+.day-events::-webkit-scrollbar {
+  width: 3px;
+}
+
+.day-events::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 10px;
+}
+
 .event-pill {
-  font-size: 0.75rem;
-  padding: 4px 8px;
-  border-radius: 6px;
+  font-size: 0.7rem;
+  padding: 3px 6px;
+  border-radius: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -129,28 +141,11 @@
   gap: 4px;
 }
 
-.event-pill:hover {
-  filter: brightness(0.95);
-  transform: translateX(2px);
-}
-
-.event-pill.order {
-  background-color: #E3F2FD;
-  color: #1565C0;
-  border-left: 4px solid #1565C0;
-}
-
-.event-pill.finance {
-  background-color: #FFF3E0;
-  color: #E65100;
-  border-left: 4px solid #E65100;
-}
-
-.event-pill.ready {
-  background-color: #E8F5E9;
-  color: #2E7D32;
-  border-left: 4px solid #2E7D32;
-}
+.event-pill.order { background-color: #FEF3C7; color: #92400E; border-left: 3px solid #92400E; }
+.event-pill.prep { background-color: #DBEAFE; color: #1E40AF; border-left: 3px solid #1E40AF; }
+.event-pill.shipping { background-color: #F3E8FF; color: #6B21A8; border-left: 3px solid #6B21A8; }
+.event-pill.ready { background-color: #D1FAE5; color: #065F46; border-left: 3px solid #065F46; }
+.event-pill.finance { background-color: #FEE2E2; color: #991B1B; border-left: 3px solid #991B1B; }
 
 /* Modal de Detalle */
 .event-detail-modal {
@@ -198,45 +193,24 @@
 @media (max-width: 768px) {
   .calendar-view {
     gap: 1rem;
+    height: auto;
+    min-height: 100vh;
   }
   
-  .month-nav {
-    gap: 0.75rem;
-    padding: 0.4rem 0.75rem;
+  .calendar-grid-container {
+    overflow-x: auto; /* Forzar scroll horizontal en móvil si es necesario */
   }
 
-  .month-nav h2 {
-    min-width: auto;
-    font-size: 0.95rem;
-  }
-
-  .calendar-grid {
-    grid-auto-rows: 90px;
+  .calendar-grid, .calendar-days-header {
+    min-width: 700px; /* Asegura que no se aplasten las columnas */
   }
   
   .calendar-day {
-    min-height: 90px;
-    padding: 0.4rem 0.25rem;
-    gap: 0.25rem;
-  }
-
-  .day-name {
-    font-size: 0.7rem;
-    padding: 0.5rem 0.25rem;
-  }
-  
-  .day-number {
-    font-size: 0.8rem;
-  }
-
-  .day-events {
-    gap: 2px;
+    min-height: 100px;
   }
 
   .event-pill {
-    font-size: 0.55rem;
+    font-size: 0.65rem;
     padding: 2px 4px;
-    height: auto;
-    border-left-width: 2px;
   }
 }

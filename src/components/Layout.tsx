@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Package, Wallet, CalendarDays, ChefHat, BarChart3, Menu, X } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Package, Wallet, CalendarDays, ChefHat, BarChart3, Menu, X, Users as UsersIcon, LogOut } from 'lucide-react';
+import { useAuth } from '../AuthContext';
 import logoUrl from '../assets/logo.png';
 import './Layout.css';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
@@ -56,7 +58,21 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <BarChart3 size={20} />
             <span>Reportes</span>
           </NavLink>
+          
+          {user?.role === 'admin' && (
+            <NavLink to="/users" onClick={closeMenu} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <UsersIcon size={20} />
+              <span>Usuarios</span>
+            </NavLink>
+          )}
         </nav>
+
+        <div className="sidebar-footer" style={{ marginTop: 'auto', padding: '1rem' }}>
+          <button className="nav-link logout-btn" onClick={logout} style={{ width: '100%', border: 'none', background: 'transparent', cursor: 'pointer' }}>
+            <LogOut size={20} />
+            <span>Cerrar Sesión</span>
+          </button>
+        </div>
       </aside>
       
       <main className="main-content">

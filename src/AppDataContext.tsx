@@ -23,6 +23,7 @@ interface AppDataState {
   addRecipe: (recipe: Omit<Recipe, 'id'>) => Promise<void>;
   updateOrder: (order: Order) => Promise<void>;
   deleteOrder: (id: string) => Promise<void>;
+  refreshStock: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -38,32 +39,36 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch initial data from DB
+  const fetchData = async () => {
+    try {
+      const [ordersRes, catalogRes, stockRes, financesRes, recipesRes] = await Promise.all([
+        fetch('/api/orders').then(res => res.json()),
+        fetch('/api/catalog').then(res => res.json()),
+        fetch('/api/stock').then(res => res.json()),
+        fetch('/api/finances').then(res => res.json()),
+        fetch('/api/recipes').then(res => res.json())
+      ]);
+      
+      if (Array.isArray(ordersRes)) setOrders(ordersRes);
+      if (Array.isArray(catalogRes)) setCatalog(catalogRes);
+      if (Array.isArray(stockRes)) setStock(stockRes);
+      if (Array.isArray(financesRes)) setFinances(financesRes);
+      if (Array.isArray(recipesRes)) setRecipes(recipesRes);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [ordersRes, catalogRes, stockRes, financesRes, recipesRes] = await Promise.all([
-          fetch('/api/orders').then(res => res.json()),
-          fetch('/api/catalog').then(res => res.json()),
-          fetch('/api/stock').then(res => res.json()),
-          fetch('/api/finances').then(res => res.json()),
-          fetch('/api/recipes').then(res => res.json())
-        ]);
-        
-        // Handle cases where api doesn't return arrays yet (e.g. running just vite dev without vercel)
-        if (Array.isArray(ordersRes)) setOrders(ordersRes);
-        if (Array.isArray(catalogRes)) setCatalog(catalogRes);
-        if (Array.isArray(stockRes)) setStock(stockRes);
-        if (Array.isArray(financesRes)) setFinances(financesRes);
-        if (Array.isArray(recipesRes)) setRecipes(recipesRes);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
     fetchData();
   }, []);
+
+  const refreshStock = async () => {
+    const stockRes = await fetch('/api/stock').then(res => res.json());
+    if (Array.isArray(stockRes)) setStock(stockRes);
+  };
 
   const addOrder = async (order: Order) => {
     try {
@@ -296,7 +301,7 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
   return (
     <AppDataContext.Provider value={{
       orders, catalog, stock, finances, customers, recipes,
-      addOrder, updateOrderStatus, updateOrder, deleteOrder, addCatalogItem, updateCatalogItem, deleteCatalogItem, updateStock, updateStockItem, deleteStockItem, addStockItem, addFinanceRecord, updateFinanceRecord, deleteFinanceRecord, addRecipe, isLoading
+      addOrder, updateOrderStatus, updateOrder, deleteOrder, addCatalogItem, updateCatalogItem, deleteCatalogItem, updateStock, updateStockItem, deleteStockItem, addStockItem, addFinanceRecord, updateFinanceRecord, deleteFinanceRecord, addRecipe, refreshStock, isLoading
     }}>
       {children}
     </AppDataContext.Provider>

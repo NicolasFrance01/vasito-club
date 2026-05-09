@@ -6,14 +6,14 @@ import type { Order } from '../types';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
-  const { orders, deleteOrder } = useAppData();
+  const { orders, deleteOrder, updateOrderStatus } = useAppData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [orderToEdit, setOrderToEdit] = useState<Order | undefined>(undefined);
 
   // Quick stats calculations
   const todaysOrders = orders.filter(o => new Date(o.date).toDateString() === new Date().toDateString());
   const todaysRevenue = todaysOrders.reduce((sum, o) => sum + o.total, 0);
-  const pendingOrders = orders.filter(o => o.status === 'Pendiente' || o.status === 'En Preparación');
+  const pendingOrders = orders.filter(o => o.status === 'Pendiente' || o.status === 'En Elaboración' || o.status === 'En Envío');
 
   return (
     <div className="dashboard animate-fade-in">
@@ -67,18 +67,26 @@ const Dashboard: React.FC = () => {
             </div>
           ) : (
             <div className="orders-list">
-              {orders.slice(0, 5).map(order => (
+              {orders.slice(0, 10).map(order => (
                 <div key={order.id} className="order-item">
                   <div className="order-info">
                     <h4>{order.customerName}</h4>
                     <p className="text-sm text-gray">{new Date(order.date).toLocaleString('es-AR')}</p>
                   </div>
-                  <div className="order-status" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <span className={`badge badge-${order.status === 'Pendiente' ? 'pending' : order.status === 'En Preparación' ? 'prep' : 'ready'}`}>
-                      {order.status}
-                    </span>
+                  <div className="order-status-actions">
+                    <select 
+                      className={`status-select status-${order.status.toLowerCase().replace(/ /g, '-')}`}
+                      value={order.status}
+                      onChange={(e) => updateOrderStatus(order.id, e.target.value as Order['status'])}
+                    >
+                      <option value="Pendiente">Pendiente</option>
+                      <option value="En Elaboración">En Elaboración</option>
+                      <option value="En Envío">En Envío</option>
+                      <option value="Entregado">Entregado</option>
+                      <option value="Cancelado">Cancelado</option>
+                    </select>
                     <span className="order-total">${order.total.toLocaleString()}</span>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <div className="item-actions">
                       <button 
                         className="btn btn-secondary icon-btn" 
                         title="Editar Pedido"

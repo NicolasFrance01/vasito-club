@@ -32,7 +32,7 @@ import NewOrderModal from '../components/NewOrderModal';
 import './CalendarView.css';
 
 const CalendarView: React.FC = () => {
-  const { orders, finances, stock, catalog, isLoading, deleteOrder } = useAppData();
+  const { orders, finances, stock, catalog, isLoading, deleteOrder, updateOrderStatus } = useAppData();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -58,7 +58,13 @@ const CalendarView: React.FC = () => {
   const renderEventPill = (event: any, type: 'order' | 'finance') => {
     const isOrder = type === 'order';
     const label = isOrder ? event.customerName : `Compra: ${stock.find(s => s.id === event.ingredientId)?.name || 'Insumo'}`;
-    const statusClass = isOrder ? (event.status === 'Listo' ? 'ready' : 'order') : 'finance';
+    
+    let statusClass = 'finance';
+    if (isOrder) {
+      statusClass = event.status === 'Entregado' ? 'ready' : 
+                    event.status === 'En Envío' ? 'shipping' :
+                    event.status === 'En Elaboración' ? 'prep' : 'order';
+    }
     
     return (
       <div 
@@ -69,7 +75,7 @@ const CalendarView: React.FC = () => {
           handleEventClick(event, type);
         }}
       >
-        {isOrder ? '🛒' : '📦'} {label}
+        {isOrder ? (event.status === 'Entregado' ? '✅' : event.status === 'En Envío' ? '🚚' : event.status === 'En Elaboración' ? '🥣' : '🛒') : '📦'} {label}
       </div>
     );
   };
@@ -110,9 +116,11 @@ const CalendarView: React.FC = () => {
                   {format(day, 'd')}
                   {isTodayDate && <span className="badge badge-ready" style={{ padding: '2px 6px', fontSize: '10px' }}>Hoy</span>}
                 </div>
-                <div className="day-events">
-                  {dayOrders.map(o => renderEventPill(o, 'order'))}
-                  {dayFinances.map(f => renderEventPill(f, 'finance'))}
+                <div className="day-events-wrapper">
+                  <div className="day-events">
+                    {dayOrders.map(o => renderEventPill(o, 'order'))}
+                    {dayFinances.map(f => renderEventPill(f, 'finance'))}
+                  </div>
                 </div>
               </div>
             );
@@ -140,6 +148,27 @@ const CalendarView: React.FC = () => {
                   <div className="detail-info-row">
                     <div className="detail-label"><Clock size={16}/> Hora</div>
                     <div className="detail-value">{format(parseISO(selectedEvent.date), 'HH:mm')} hs</div>
+                  </div>
+                  <div className="detail-info-row">
+                    <div className="detail-label"><Package size={16}/> Estado</div>
+                    <div className="detail-value">
+                      <select 
+                        className="input" 
+                        style={{ padding: '4px 8px', height: 'auto', fontSize: '0.9rem' }}
+                        value={selectedEvent.status}
+                        onChange={(e) => {
+                          const newStatus = e.target.value as Order['status'];
+                          updateOrderStatus(selectedEvent.id, newStatus);
+                          setSelectedEvent({ ...selectedEvent, status: newStatus });
+                        }}
+                      >
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="En Elaboración">En Elaboración</option>
+                        <option value="En Envío">En Envío</option>
+                        <option value="Entregado">Entregado</option>
+                        <option value="Cancelado">Cancelado</option>
+                      </select>
+                    </div>
                   </div>
                   <div className="detail-info-row">
                     <div className="detail-label"><MapPin size={16}/> Entrega</div>

@@ -1,18 +1,23 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAppData } from '../AppDataContext';
-import { PlusCircle, AlertTriangle, CheckCircle2, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, AlertTriangle, CheckCircle2, Edit, Trash2, ClipboardList, Save } from 'lucide-react';
 import './Stock.css';
 
 const Stock: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isRevisionModalOpen, setIsRevisionModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [name, setName] = useState('');
   const [unit, setUnit] = useState('kg');
   const [quantity, setQuantity] = useState<number | string>(0);
   const [minQuantity, setMinQuantity] = useState<number | string>(1);
-  const { stock, updateStock, updateStockItem, deleteStockItem, addStockItem, isLoading } = useAppData();
+  const [revisionItems, setRevisionItems] = useState<any[]>([]);
+  const [revisionNotes, setRevisionNotes] = useState('');
+  const [isSavingRevision, setIsSavingRevision] = useState(false);
+
+  const { stock, updateStock, updateStockItem, deleteStockItem, addStockItem, isLoading, refreshStock } = useAppData();
 
   const handleUpdateQuantity = (id: string, newQuantity: number) => {
     if (newQuantity < 0) return;
@@ -46,6 +51,38 @@ const Stock: React.FC = () => {
     }
   };
 
+  const openRevisionModal = () => {
+    setRevisionItems(stock.map(item => ({ id: item.id, name: item.name, quantity: item.quantity, unit: item.unit })));
+    setRevisionNotes('');
+    setIsRevisionModalOpen(true);
+  };
+
+  const handleRevisionChange = (id: string, value: string) => {
+    setRevisionItems(prev => prev.map(item => item.id === id ? { ...item, quantity: value } : item));
+  };
+
+  const handleSaveRevision = async () => {
+    setIsSavingRevision(true);
+    try {
+      const res = await fetch('/api/stock-revisions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: revisionItems.map(item => ({ id: item.id, quantity: Number(item.quantity) })),
+          notes: revisionNotes
+        })
+      });
+      if (res.ok) {
+        setIsRevisionModalOpen(false);
+        if (refreshStock) refreshStock();
+      }
+    } catch (error) {
+      console.error('Error saving revision:', error);
+    } finally {
+      setIsSavingRevision(false);
+    }
+  };
+
   const openEditModal = (item: any) => {
     setEditingItem(item);
     setName(item.name);
@@ -76,10 +113,16 @@ const Stock: React.FC = () => {
           <h1 className="text-2xl">Inventario de Insumos</h1>
           <p className="text-gray">Controla tu stock y recibe alertas cuando te falte materia prima.</p>
         </div>
-        <button className="btn btn-secondary" onClick={() => setIsAddModalOpen(true)}>
-          <PlusCircle size={20} />
-          Nuevo Insumo
-        </button>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button className="btn btn-secondary" onClick={openRevisionModal}>
+            <ClipboardList size={20} />
+            Revisión
+          </button>
+          <button className="btn btn-primary" onClick={() => setIsAddModalOpen(true)}>
+            <PlusCircle size={20} />
+            Nuevo Insumo
+          </button>
+        </div>
       </div>
 
       <div className="card">
@@ -126,6 +169,52 @@ const Stock: React.FC = () => {
           )}
         </div>
       </div>
+
+      {isRevisionModalOpen && createPortal(
+        <div className="modal-overlay">
+          <div className="modal-content animate-fade-in" style={{ maxWidth: '600px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div className="modal-header">
+              <h2>Revisión General de Stock</h2>
+              <button onClick={() => setIsRevisionModalOpen(false)} className="close-btn">×</button>
+            </div>
+            <div className="modal-body" style={{ overflowY: 'auto', flex: 1 }}>
+              <p className="text-gray mb-4">Ingresa el stock real actual de todos tus insumos.</p>
+              <div className="revision-grid">
+                {revisionItems.map(item => (
+                  <div key={item.id} className="revision-row">
+                    <label>{item.name} ({item.unit})</label>
+                    <input 
+                      type="number" 
+                      step="any"
+                      className="input" 
+                      value={item.quantity} 
+                      onChange={e => handleRevisionChange(item.id, e.target.value)} 
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="input-group mt-4">
+                <label>Notas de la revisión (opcional)</label>
+                <textarea 
+                  className="input" 
+                  value={revisionNotes} 
+                  onChange={e => setRevisionNotes(e.target.value)}
+                  placeholder="Ej: Ajuste mensual de inventario..."
+                  rows={3}
+                />
+              </div>
+            </div>
+            <div className="modal-footer" style={{ padding: '1rem' }}>
+              <button className="btn btn-secondary" onClick={() => setIsRevisionModalOpen(false)}>Cancelar</button>
+              <button className="btn btn-primary" onClick={handleSaveRevision} disabled={isSavingRevision}>
+                <Save size={18} />
+                {isSavingRevision ? 'Guardando...' : 'Guardar Revisión'}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {isAddModalOpen && createPortal(
         <div className="modal-overlay">
