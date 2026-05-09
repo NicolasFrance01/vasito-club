@@ -96,7 +96,7 @@ const Catalog: React.FC = () => {
   };
 
   const handleAddPromo = () => {
-    setPromos([...promos, { name: '', quantity: 2, promoPrice: 0 }]);
+    setPromos([...promos, { quantity: 2, promoPrice: 0 }]);
   };
 
   const handleUpdatePromo = (index: number, field: keyof PromoType, value: any) => {
@@ -190,9 +190,9 @@ const Catalog: React.FC = () => {
                 </p>
                 {item.promos && item.promos.length > 0 && (
                   <div className="catalog-promos mt-2">
-                    {item.promos.map((p, i) => (
+                    {item.promos.sort((a: any, b: any) => a.quantity - b.quantity).map((p: any, i: number) => (
                       <span key={i} className="text-xs badge badge-prep" style={{ display: 'inline-block', marginRight: '4px', marginBottom: '4px' }}>
-                        {p.name}: {p.quantity}x ${p.promoPrice}
+                        {p.quantity}+ unid: ${p.promoPrice.toLocaleString()}
                       </span>
                     ))}
                   </div>
@@ -241,28 +241,28 @@ const Catalog: React.FC = () => {
               </div>
               
               <div className="form-section mt-4">
-                <h3>Promociones (Opcional)</h3>
-                <p className="text-sm text-gray mb-2">Las promos se aplicarán automáticamente si el cliente pide la cantidad exacta o más.</p>
+                <h3>Promociones por Cantidad</h3>
+                <p className="text-sm text-gray mb-2">Define precios especiales para compras por mayor.</p>
                 {promos.map((promo, index) => (
                   <div key={index} className="promo-row-modern mb-2">
-                    <div className="promo-main-inputs">
-                      <input type="text" className="input" placeholder="Nombre (ej: Promo Verano)" value={promo.name} onChange={e => handleUpdatePromo(index, 'name', e.target.value)} required />
-                    </div>
-                    <div className="promo-small-inputs">
+                    <div className="promo-small-inputs" style={{ gridTemplateColumns: '1fr 1fr auto' }}>
                       <div className="input-with-label">
-                        <label className="text-xs text-gray">Cant.</label>
+                        <label className="text-xs text-gray">Desde (cant.)</label>
                         <input type="number" className="input" min="2" value={promo.quantity} onChange={e => handleUpdatePromo(index, 'quantity', Number(e.target.value))} required />
                       </div>
                       <div className="input-with-label">
-                        <label className="text-xs text-gray">Precio $</label>
+                        <label className="text-xs text-gray">Precio c/u $</label>
                         <input type="number" className="input" min="0" value={promo.promoPrice} onChange={e => handleUpdatePromo(index, 'promoPrice', Number(e.target.value))} required />
                       </div>
                       <button type="button" className="btn btn-danger icon-btn self-end" onClick={() => handleRemovePromo(index)}><Trash2 size={16}/></button>
                     </div>
+                    <p className="text-xs text-accent font-semibold mt-1">
+                      A partir de {promo.quantity} unidades, cada una queda a ${promo.promoPrice.toLocaleString()}
+                    </p>
                   </div>
                 ))}
                 <button type="button" className="btn btn-secondary mt-2" onClick={handleAddPromo} style={{ fontSize: '0.85rem' }}>
-                  + Añadir Promo
+                  + Añadir Escala de Precio
                 </button>
               </div>
 

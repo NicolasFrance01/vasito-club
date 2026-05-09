@@ -21,6 +21,15 @@ export interface OrderItem {
   quantity: number;
 }
 
+export interface OrderStatusHistory {
+  id: string;
+  orderId: string;
+  status: string;
+  userId?: string;
+  username?: string;
+  date: string;
+}
+
 export interface Order {
   id: string;
   customerName: string;
@@ -33,10 +42,12 @@ export interface Order {
   paymentMethod: PaymentMethod;
   status: OrderStatus;
   total: number;
+  createdById?: string;
+  createdByUsername?: string;
+  history?: OrderStatusHistory[];
 }
 
 export interface PromoType {
-  name: string;
   quantity: number;
   promoPrice: number;
 }
@@ -48,7 +59,7 @@ export interface CatalogItem {
   carouselImages: string[];
   ingredients: string[];
   price: number;
-  promos?: PromoType[];
+  promos?: any;
 }
 
 export interface StockItem {

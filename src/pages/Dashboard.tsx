@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppData } from '../AppDataContext';
-import { PlusCircle, TrendingUp, Clock, Package, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, TrendingUp, Clock, Package, Edit, Trash2, User, History } from 'lucide-react';
 import NewOrderModal from '../components/NewOrderModal';
 import type { Order } from '../types';
 import './Dashboard.css';
@@ -72,6 +72,18 @@ const Dashboard: React.FC = () => {
                   <div className="order-info">
                     <h4>{order.customerName}</h4>
                     <p className="text-sm text-gray">{new Date(order.date).toLocaleString('es-AR')}</p>
+                    <div className="order-audit-info">
+                      <div className="audit-item">
+                        <User size={12} /> {order.createdByUsername || 'Sistema'}
+                      </div>
+                      {order.history && order.history.length > 1 && (
+                        <div className="history-indicator" title={
+                          order.history.map(h => `${new Date(h.date).toLocaleTimeString('es-AR')}: ${h.status} (${h.username || '?'})`).join('\n')
+                        }>
+                          <History size={12} /> {order.history.length} cambios
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="order-status-actions">
                     <select 

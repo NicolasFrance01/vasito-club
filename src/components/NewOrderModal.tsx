@@ -43,11 +43,14 @@ const NewOrderModal: React.FC<Props> = ({ onClose, orderToEdit }) => {
 
   const getAppliedPromo = (catalogId: string, quantity: number) => {
     const catItem = catalog.find(c => c.id === catalogId);
-    if (!catItem || !catItem.promos || catItem.promos.length === 0) return null;
+    if (!catItem || !catItem.promos || !Array.isArray(catItem.promos)) return null;
     
-    // Sort promos by quantity descending to apply the largest applicable promo
-    const sortedPromos = [...catItem.promos].sort((a, b) => b.quantity - a.quantity);
-    return sortedPromos.find(p => quantity >= p.quantity) || null;
+    // Find the highest threshold that is <= current quantity
+    const applicablePromos = catItem.promos
+      .filter((p: any) => quantity >= p.quantity)
+      .sort((a: any, b: any) => b.quantity - a.quantity);
+      
+    return applicablePromos[0] || null;
   };
 
   const calculateSubtotal = () => {
@@ -56,13 +59,9 @@ const NewOrderModal: React.FC<Props> = ({ onClose, orderToEdit }) => {
       if (!catItem) return sum;
       
       const promo = getAppliedPromo(item.catalogId, item.quantity);
-      if (promo) {
-        const promoPacks = Math.floor(item.quantity / promo.quantity);
-        const remainder = item.quantity % promo.quantity;
-        return sum + (promoPacks * promo.promoPrice) + (remainder * catItem.price);
-      }
+      const unitPrice = promo ? promo.promoPrice : catItem.price;
       
-      return sum + (catItem.price * item.quantity);
+      return sum + (unitPrice * item.quantity);
     }, 0);
   };
 
@@ -184,7 +183,7 @@ const NewOrderModal: React.FC<Props> = ({ onClose, orderToEdit }) => {
                     {appliedPromo && (
                       <div style={{ width: '100%', marginTop: '0.25rem' }}>
                         <span className="badge badge-ready text-xs">
-                          🎉 ¡Promo "{appliedPromo.name}" Aplicada! ({appliedPromo.quantity}x ${appliedPromo.promoPrice})
+                          🎉 ¡Precio mayorista aplicado! (${appliedPromo.promoPrice.toLocaleString()} c/u)
                         </span>
                       </div>
                     )}

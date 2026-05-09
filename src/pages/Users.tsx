@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { UserPlus, Trash2, Shield, User } from 'lucide-react';
 import './Users.css';
 
@@ -124,9 +125,9 @@ const Users: React.FC = () => {
         </div>
       </div>
 
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <div className="modal-overlay">
-          <div className="modal-content animate-fade-in" style={{ maxWidth: '400px' }}>
+          <div className="modal-content animate-fade-in">
             <div className="modal-header">
               <h2>Agregar Nuevo Usuario</h2>
               <button onClick={() => setIsModalOpen(false)} className="close-btn">×</button>
@@ -147,13 +148,14 @@ const Users: React.FC = () => {
                   <option value="admin">Administrador</option>
                 </select>
               </div>
-              <div className="modal-footer" style={{ padding: '1rem 0 0 0' }}>
+              <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancelar</button>
                 <button type="submit" className="btn btn-primary">Crear Usuario</button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

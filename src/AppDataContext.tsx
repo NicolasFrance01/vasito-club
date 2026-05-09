@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 import type { Order, CatalogItem, StockItem, FinanceRecord, Customer, Recipe } from './types';
 
 interface AppDataState {
@@ -24,29 +25,33 @@ interface AppDataState {
   updateOrder: (order: Order) => Promise<void>;
   deleteOrder: (id: string) => Promise<void>;
   refreshStock: () => Promise<void>;
+  revisions: any[];
   isLoading: boolean;
 }
 
 const AppDataContext = createContext<AppDataState | undefined>(undefined);
 
 export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user: currentUser } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [stock, setStock] = useState<StockItem[]>([]);
   const [finances, setFinances] = useState<FinanceRecord[]>([]);
   const [customers, ] = useState<Customer[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [revisions, setRevisions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch initial data from DB
   const fetchData = async () => {
     try {
-      const [ordersRes, catalogRes, stockRes, financesRes, recipesRes] = await Promise.all([
+      const [ordersRes, catalogRes, stockRes, financesRes, recipesRes, revisionsRes] = await Promise.all([
         fetch('/api/orders').then(res => res.json()),
         fetch('/api/catalog').then(res => res.json()),
         fetch('/api/stock').then(res => res.json()),
         fetch('/api/finances').then(res => res.json()),
-        fetch('/api/recipes').then(res => res.json())
+        fetch('/api/recipes').then(res => res.json()),
+        fetch('/api/stock-revisions').then(res => res.json())
       ]);
       
       if (Array.isArray(ordersRes)) setOrders(ordersRes);
@@ -54,6 +59,7 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (Array.isArray(stockRes)) setStock(stockRes);
       if (Array.isArray(financesRes)) setFinances(financesRes);
       if (Array.isArray(recipesRes)) setRecipes(recipesRes);
+      if (Array.isArray(revisionsRes)) setRevisions(revisionsRes);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -66,8 +72,12 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   const refreshStock = async () => {
-    const stockRes = await fetch('/api/stock').then(res => res.json());
+    const [stockRes, revisionsRes] = await Promise.all([
+      fetch('/api/stock').then(res => res.json()),
+      fetch('/api/stock-revisions').then(res => res.json())
+    ]);
     if (Array.isArray(stockRes)) setStock(stockRes);
+    if (Array.isArray(revisionsRes)) setRevisions(revisionsRes);
   };
 
   const addOrder = async (order: Order) => {
@@ -75,7 +85,11 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(order)
+        body: JSON.stringify({
+          ...order,
+          userId: currentUser?.id,
+          username: currentUser?.username
+        })
       });
       if (res.ok) {
         const newOrder = await res.json();
@@ -91,10 +105,16 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const res = await fetch('/api/orders', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status })
+        body: JSON.stringify({ 
+          id, 
+          status,
+          userId: currentUser?.id,
+          username: currentUser?.username
+        })
       });
       if (res.ok) {
-        setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+        const updatedOrder = await res.json();
+        setOrders(prev => prev.map(o => o.id === id ? updatedOrder : o));
       }
     } catch (e) {
       console.error(e);
@@ -300,7 +320,7 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   return (
     <AppDataContext.Provider value={{
-      orders, catalog, stock, finances, customers, recipes,
+      orders, catalog, stock, finances, customers, recipes, revisions,
       addOrder, updateOrderStatus, updateOrder, deleteOrder, addCatalogItem, updateCatalogItem, deleteCatalogItem, updateStock, updateStockItem, deleteStockItem, addStockItem, addFinanceRecord, updateFinanceRecord, deleteFinanceRecord, addRecipe, refreshStock, isLoading
     }}>
       {children}

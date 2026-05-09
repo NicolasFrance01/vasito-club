@@ -16,7 +16,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'POST') {
     try {
-      const { customerName, phone, address, delivery, deliveryCost, date, paymentMethod, status, total, items } = req.body;
+      const { customerName, phone, address, delivery, deliveryCost, date, paymentMethod, status, total, items, userId, username } = req.body;
       
       const newOrder = await prisma.order.create({
         data: {
@@ -29,14 +29,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           paymentMethod,
           status,
           total,
+          createdById: userId,
+          createdByUsername: username,
           items: {
             create: items.map((item: any) => ({
               catalogId: item.catalogId,
               quantity: item.quantity,
             })),
           },
+          history: {
+            create: {
+              status: status || 'Pendiente',
+              userId,
+              username,
+              date: new Date()
+            }
+          }
         },
-        include: { items: true },
+        include: { items: true, history: true },
       });
 
       // Handle auto customer creation
@@ -57,14 +67,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'PATCH') {
     try {
-      const { id, status } = req.body;
+      const { id, status, userId, username } = req.body;
       const updatedOrder = await prisma.order.update({
         where: { id: String(id) },
-        data: { status },
-        include: { items: true },
+        data: { 
+          status,
+          history: {
+            create: {
+              status,
+              userId,
+              username,
+              date: new Date()
+            }
+          }
+        },
+        include: { items: true, history: true },
       });
       return res.status(200).json(updatedOrder);
     } catch (error) {
+      console.error(error);
       return res.status(500).json({ error: 'Failed to update order status' });
     }
   }

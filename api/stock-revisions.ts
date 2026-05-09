@@ -15,16 +15,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'POST') {
     try {
-      const { items, notes } = req.body; // items is an array of { id, quantity }
+      const { items, notes, userId, username } = req.body;
       
-      // Perform as a transaction
       const result = await prisma.$transaction(async (tx) => {
-        // 1. Create the revision record
         const revision = await tx.stockRevision.create({
           data: {
             date: new Date(),
             details: items,
-            notes
+            notes,
+            userId,
+            username
           }
         });
 

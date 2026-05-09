@@ -19,17 +19,20 @@ model CatalogItem {
 }
 
 model Order {
-  id            String      @id @default(uuid())
-  customerName  String
-  phone         String?
-  address       String?
-  delivery      Boolean     @default(false)
-  deliveryCost  Float       @default(0)
-  date          DateTime    @default(now())
-  paymentMethod String      @default("Efectivo")
-  status        String      @default("Pendiente")
-  total         Float
-  items         OrderItem[]
+  id                String      @id @default(uuid())
+  customerName      String
+  phone             String?
+  address           String?
+  delivery          Boolean     @default(false)
+  deliveryCost      Float       @default(0)
+  date              DateTime    @default(now())
+  paymentMethod     String      @default("Efectivo")
+  status            String      @default("Pendiente")
+  total             Float
+  items             OrderItem[]
+  createdById       String?
+  createdByUsername String?
+  history           OrderStatusHistory[]
 }
 
 model OrderItem {
@@ -39,6 +42,16 @@ model OrderItem {
   quantity      Int
   order         Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
   catalogItem   CatalogItem @relation(fields: [catalogId], references: [id], onDelete: Restrict)
+}
+
+model OrderStatusHistory {
+  id        String   @id @default(uuid())
+  orderId   String
+  status    String
+  userId    String?
+  username  String?
+  date      DateTime @default(now())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
 model StockItem {
@@ -97,4 +110,6 @@ model StockRevision {
   date      DateTime @default(now())
   details   Json     // List of items and their values at revision time
   notes     String?
+  userId    String?
+  username  String?
 }

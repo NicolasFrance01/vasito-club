@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAppData } from '../AppDataContext';
-import { PlusCircle, AlertTriangle, CheckCircle2, Edit, Trash2, ClipboardList, Save } from 'lucide-react';
+import { useAuth } from '../AuthContext';
+import { PlusCircle, AlertTriangle, CheckCircle2, Edit, Trash2, ClipboardList, Save, History, User } from 'lucide-react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import './Stock.css';
 
 const Stock: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isRevisionModalOpen, setIsRevisionModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [name, setName] = useState('');
   const [unit, setUnit] = useState('kg');
@@ -17,7 +21,8 @@ const Stock: React.FC = () => {
   const [revisionNotes, setRevisionNotes] = useState('');
   const [isSavingRevision, setIsSavingRevision] = useState(false);
 
-  const { stock, updateStock, updateStockItem, deleteStockItem, addStockItem, isLoading, refreshStock } = useAppData();
+  const { stock, updateStock, updateStockItem, deleteStockItem, addStockItem, isLoading, refreshStock, revisions } = useAppData();
+  const { user: currentUser } = useAuth();
 
   const handleUpdateQuantity = (id: string, newQuantity: number) => {
     if (newQuantity < 0) return;
@@ -69,7 +74,9 @@ const Stock: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           items: revisionItems.map(item => ({ id: item.id, quantity: Number(item.quantity) })),
-          notes: revisionNotes
+          notes: revisionNotes,
+          userId: currentUser?.id,
+          username: currentUser?.username
         })
       });
       if (res.ok) {
@@ -114,6 +121,10 @@ const Stock: React.FC = () => {
           <p className="text-gray">Controla tu stock y recibe alertas cuando te falte materia prima.</p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button className="btn btn-secondary" onClick={() => setIsHistoryModalOpen(true)}>
+            <History size={20} />
+            Historial
+          </button>
           <button className="btn btn-secondary" onClick={openRevisionModal}>
             <ClipboardList size={20} />
             Revisión
@@ -293,6 +304,53 @@ const Stock: React.FC = () => {
                 <button type="submit" className="btn btn-primary">Actualizar Insumo</button>
               </div>
             </form>
+          </div>
+        </div>,
+        document.body
+      )}
+      {isHistoryModalOpen && createPortal(
+        <div className="modal-overlay">
+          <div className="modal-content animate-fade-in" style={{ maxWidth: '800px', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+            <div className="modal-header">
+              <div className="flex items-center gap-2">
+                <History className="text-accent" />
+                <h2>Historial de Revisiones</h2>
+              </div>
+              <button onClick={() => setIsHistoryModalOpen(false)} className="close-btn">×</button>
+            </div>
+            <div className="modal-body" style={{ overflowY: 'auto', flex: 1 }}>
+              {revisions.length === 0 ? (
+                <p className="empty-state">No hay revisiones registradas todavía.</p>
+              ) : (
+                <div className="revision-history">
+                  {revisions.map((rev: any) => (
+                    <div key={rev.id} className="revision-history-item">
+                      <div className="revision-history-header">
+                        <span>{format(new Date(rev.date), "d 'de' MMMM, HH:mm'hs'", { locale: es })}</span>
+                        <div className="flex items-center gap-1 text-sm text-gray">
+                          <User size={14} /> {rev.username || 'Sistema'}
+                        </div>
+                      </div>
+                      {rev.notes && <div className="revision-history-notes">{rev.notes}</div>}
+                      <div className="revision-history-details">
+                        {rev.details && Array.isArray(rev.details) && rev.details.map((detail: any, idx: number) => {
+                          const item = stock.find(s => s.id === detail.id);
+                          return (
+                            <div key={idx} className="revision-detail-chip">
+                              <span>{item?.name || 'Insumo'}:</span>
+                              <strong>{detail.quantity} {item?.unit}</strong>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" style={{ width: '100%' }} onClick={() => setIsHistoryModalOpen(false)}>Cerrar</button>
+            </div>
           </div>
         </div>,
         document.body
