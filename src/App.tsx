@@ -9,8 +9,7 @@ import Recipes from './pages/Recipes';
 import Reports from './pages/Reports';
 import Login from './pages/Login';
 import Users from './pages/Users';
-import { AuthProvider, useAuth } from './AuthContext';
-import { AppDataProvider } from './AppDataContext';
+import { useAuth } from './AuthContext';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; adminOnly?: boolean }> = ({ children, adminOnly }) => {
   const { user, isLoading } = useAuth();
