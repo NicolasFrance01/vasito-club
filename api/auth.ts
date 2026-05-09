@@ -9,24 +9,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { username, password } = req.body;
 
   try {
-    // Basic check for the initial admin if no users exist
-    const userCount = await prisma.user.count();
+    // Check if the admin user exists
+    let admin = await prisma.user.findUnique({
+      where: { username: 'admin' }
+    });
     
-    if (userCount === 0) {
-      if (username === 'admin' && password === 'Ndf41847034@') {
-        const admin = await prisma.user.create({
-          data: {
-            username: 'admin',
-            password: 'Ndf41847034@', // In a real app, use hashing!
-            role: 'admin'
-          }
-        });
-        return res.status(200).json({ id: admin.id, username: admin.username, role: admin.role });
-      }
+    // If admin doesn't exist and credentials match the magic ones, create it
+    if (!admin && username === 'admin' && password === 'Ndf41847034@') {
+      admin = await prisma.user.create({
+        data: {
+          username: 'admin',
+          password: 'Ndf41847034@',
+          role: 'admin'
+        }
+      });
     }
 
     const user = await prisma.user.findFirst({
-      where: { username, password } // In a real app, use bcrypt!
+      where: { username, password }
     });
 
     if (user) {
