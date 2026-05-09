@@ -4,7 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
-import { ArrowLeft, Calendar, TrendingUp, TrendingDown } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { subDays, startOfWeek, startOfMonth, isAfter, parseISO } from 'date-fns';
 
@@ -139,7 +139,7 @@ const Reports: React.FC = () => {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <RechartsTooltip formatter={(val) => `$${val.toLocaleString()}`} />
+                <RechartsTooltip formatter={(val: any) => `$${(val || 0).toLocaleString()}`} />
                 <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={60} />
               </BarChart>
             </ResponsiveContainer>
@@ -190,7 +190,7 @@ const Reports: React.FC = () => {
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                 <XAxis type="number" />
                 <YAxis dataKey="name" type="category" width={120} />
-                <RechartsTooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
+                <RechartsTooltip formatter={(value: any) => `$${Number(value || 0).toLocaleString()}`} />
                 <Bar dataKey="Ingresos" fill="var(--accent-color)" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
