@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Catalog from './pages/Catalog';
@@ -43,13 +43,7 @@ function AppRoutes() {
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <AppDataProvider>
-          <AppRoutes />
-        </AppDataProvider>
-      </AuthProvider>
-    </Router>
+    <AppRoutes />
   );
 }
 
