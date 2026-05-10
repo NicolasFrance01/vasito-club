@@ -9,18 +9,35 @@
   min-height: 100vh;
   background: var(--bg-color);
   overflow-x: hidden;
+  position: relative;
 }
 
-/* ─── Navbar ────────────────────────────────────────────────── */
+/* ─── Watermark ─────────────────────────────────────────────── */
+.wm-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.wm-logo {
+  position: absolute;
+  opacity: 0.045;
+  filter: grayscale(100%) brightness(0.7);
+  object-fit: contain;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* ─── Navbar — fully transparent ───────────────────────────── */
 .cat-navbar {
   position: fixed;
   inset: 0 0 auto 0;
   z-index: 200;
-  padding: 0.9rem 0;
-  background: rgba(252, 250, 248, 0.82);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(217, 138, 75, 0.1);
+  padding: 1rem 0;
+  background: transparent;
 }
 
 .cat-navbar-inner {
@@ -33,42 +50,120 @@
 }
 
 .cat-navbar-logo {
-  height: 38px;
+  height: 40px;
   width: auto;
   object-fit: contain;
+  filter: drop-shadow(0 1px 3px rgba(62,39,35,0.15));
 }
 
 .cat-navbar-links {
   display: flex;
   align-items: center;
-  gap: 2.5rem;
+  gap: 2rem;
 }
 
 .cat-nav-link {
-  font-size: 0.8rem;
-  font-weight: 500;
+  font-size: 0.78rem;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-secondary);
   text-decoration: none;
   transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
 }
 
 .cat-nav-link:hover {
   color: var(--text-primary);
 }
 
+/* Instagram pill */
+.cat-nav-ig {
+  background: rgba(62, 39, 35, 0.07);
+  border-radius: var(--radius-full);
+  padding: 0.4rem 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.cat-nav-ig:hover {
+  background: rgba(62, 39, 35, 0.13);
+  color: var(--text-primary);
+}
+
+/* Contacto CTA pill */
 .cat-nav-cta {
-  padding: 0.45rem 1.1rem;
+  padding: 0.45rem 1rem 0.45rem 1.1rem;
   border-radius: var(--radius-full);
   background: var(--accent-color);
   color: #fff !important;
+  gap: 0.35rem;
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .cat-nav-cta:hover {
   background: var(--accent-hover);
   transform: translateY(-1px);
+}
+
+/* ── Contact dropdown ── */
+.cat-contact-wrap {
+  position: relative;
+}
+
+.cat-contact-drop {
+  position: absolute;
+  top: calc(100% + 0.7rem);
+  right: 0;
+  min-width: 240px;
+  background: var(--surface-color);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(62, 39, 35, 0.18), 0 2px 6px rgba(62, 39, 35, 0.08);
+  border: 1px solid var(--border-color);
+  padding: 0.5rem;
+  z-index: 300;
+  animation: dropIn 0.18s ease;
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cat-contact-drop-title {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  padding: 0.4rem 0.75rem 0.6rem;
+}
+
+.cat-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background 0.15s ease;
+}
+
+.cat-contact-item:hover {
+  background: var(--bg-color);
+}
+
+.cat-contact-item svg {
+  color: #25D366;
+  flex-shrink: 0;
 }
 
 /* ─── Hero ──────────────────────────────────────────────────── */
@@ -78,8 +173,9 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  z-index: 1;
   overflow: hidden;
-  background: var(--bg-color);
+  /* no solid background → watermark shows through */
 }
 
 .cat-hero-glow {
@@ -163,7 +259,8 @@
 
 /* ─── Main wrapper ──────────────────────────────────────────── */
 .cat-main {
-  background: var(--bg-color);
+  position: relative;
+  z-index: 1;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -175,7 +272,9 @@
 .ds-section {
   height: 100vh;
   width: 100%;
-  background: var(--bg-color);
+  position: relative;
+  z-index: 1;
+  background: rgba(252, 250, 248, 0.88); /* semi-transparent so watermark shows faintly */
   border-top: 1px solid var(--border-color);
 }
 
@@ -477,71 +576,98 @@
    RESPONSIVE
 ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 1024px) {
-  .ds-visual {
-    width: 62%;
-  }
-  .ds-text-col {
-    padding: 2rem 3vw 2rem 1.5rem;
-  }
+  .ds-visual { width: 62%; }
+  .ds-text-col { padding: 2rem 3vw 2rem 1.5rem; }
 }
 
+/* ── Tablet / Mobile (≤ 768px) ─────────────────────────── */
 @media (max-width: 768px) {
-  /* Navbar */
+
+  /* Navbar: compact, frosted on mobile */
+  .cat-navbar {
+    background: rgba(252, 250, 248, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(217, 138, 75, 0.1);
+    padding: 0.7rem 0;
+  }
+
+  .cat-navbar-inner {
+    padding: 0 1.25rem;
+  }
+
+  .cat-navbar-logo {
+    height: 32px;
+  }
+
   .cat-navbar-links {
-    display: none;
+    gap: 0.75rem;
+  }
+
+  .cat-nav-ig span { display: none; }  /* icon only on mobile */
+  .cat-nav-ig { padding: 0.4rem 0.55rem; }
+
+  .cat-nav-cta {
+    padding: 0.4rem 0.85rem;
+    font-size: 0.72rem;
+  }
+
+  /* Dropdown: full-width on mobile */
+  .cat-contact-drop {
+    right: -1rem;
+    min-width: 220px;
   }
 
   /* Hero */
-  .cat-hero-title {
-    font-size: 2.2rem;
-  }
+  .cat-hero-title { font-size: 2.1rem; }
+  .cat-hero-subtitle { font-size: 0.95rem; }
+  .cat-hero-logo { height: 70px; }
 
-  /* Dessert section: stack vertically, no pin */
+  /* Watermark: fewer, lighter on small screens */
+  .wm-logo { opacity: 0.03; }
+
+  /* Dessert section: vertical stack, no pin */
   .ds-section {
     height: auto;
     min-height: auto;
+    background: rgba(252, 250, 248, 0.95);
   }
 
-  .ds-layout {
-    flex-direction: column;
-  }
+  .ds-layout { flex-direction: column; }
 
   .ds-image-col {
     width: 100%;
-    height: 70vw;
-    max-height: 420px;
+    height: 72vw;
+    max-height: 400px;
+    padding: 1.5rem 1.5rem 1rem;
     overflow: hidden;
-    padding: 1.5rem;
+    justify-content: center;
   }
 
   .ds-visual {
-    width: 65%;
+    width: 68%;
     max-width: none;
     overflow: hidden;
   }
 
-  /* Labels hidden on mobile — content shown as list */
-  .ing-label {
-    display: none;
-  }
+  /* Labels hidden — shown as numbered list instead */
+  .ing-label { display: none; }
 
   .ds-text-col {
     width: 100%;
     height: auto;
-    padding: 2rem 1.5rem 3rem;
-    overflow: visible;
+    padding: 1.5rem 1.25rem 3rem;
     align-items: flex-start;
+    overflow: visible;
   }
 
-  .ds-info {
-    max-width: 100%;
-  }
+  .ds-info { max-width: 100%; }
 
-  .ds-name {
-    font-size: 1.8rem;
-  }
+  .ds-name { font-size: 1.75rem; }
+  .ds-desc { font-size: 0.93rem; }
 
-  /* Make text visible immediately on mobile (GSAP skips) */
+  /* Force visible — GSAP matchMedia already handles this,
+     but belt-and-suspenders for SSR / no-JS */
   .ds-tag,
   .ds-name,
   .ds-desc,
@@ -549,29 +675,29 @@
   .ds-layer-item,
   .ds-price-block {
     opacity: 1 !important;
+    transform: none !important;
   }
 
   /* Footer */
   .cat-footer-inner {
     flex-direction: column;
     gap: 2rem;
+    padding-bottom: 2rem;
   }
 
-  .cat-footer-cols {
-    gap: 2.5rem;
-  }
+  .cat-footer-cols { gap: 2rem; }
 }
 
+/* ── Small phones (≤ 480px) ──────────────────────────────── */
 @media (max-width: 480px) {
-  .cat-hero-title {
-    font-size: 1.9rem;
-  }
+  .cat-hero-title { font-size: 1.8rem; }
 
   .ds-image-col {
-    height: 80vw;
+    height: 78vw;
+    padding: 1.25rem 1.25rem 0.75rem;
   }
 
-  .ds-visual {
-    width: 78%;
-  }
+  .ds-visual { width: 76%; }
+
+  .ds-name { font-size: 1.55rem; }
 }

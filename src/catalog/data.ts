@@ -1,12 +1,13 @@
-import chajaFull     from '../assets/postre chaja.jpeg';
-import chajaExp      from '../assets/postre chaja con capas.png';
-import oreoFull      from '../assets/postre oreo.jpg';
-import oreoExp       from '../assets/postre oreo con capas.png';
-import chocoFull     from '../assets/postre chocotorta.png';
-import chocoExp      from '../assets/postre chocotorta con capas.png';
+import chajaFull  from '../assets/postre chaja.jpeg';
+import chajaExp   from '../assets/postre chaja con capas.png';
+import oreoFull   from '../assets/postre oreo.jpg';
+import oreoExp    from '../assets/postre oreo con capas.png';
+import chocoFull  from '../assets/postre chocotorta.png';
+import chocoExp   from '../assets/postre chocotorta con capas.png';
 
 export interface Layer {
   name: string;
+  /** % from top of image where label points (top layer ≈ 14, bottom ≈ 82) */
   topPercent: number;
 }
 
@@ -16,6 +17,7 @@ export interface Dessert {
   tag: string;
   description: string;
   price: string;
+  /** Layers listed bottom → top (index 0 = base) */
   layers: Layer[];
   imageFull: string;
   imageExploded: string;
@@ -24,51 +26,57 @@ export interface Dessert {
 export const desserts: Dessert[] = [
   {
     id: 'chaja',
-    name: 'Chajá',
+    name: 'Club Chajá',
     tag: 'Clásico favorito',
     description:
-      'El postre más querido de Vasito Club. Capas de bizcochuelo esponjoso, dulce de leche artesanal, merengue aireado y coronado con duraznos frescos. Cada capa cuenta una historia.',
+      'El postre más querido de Vasito Club. Capas de bizcochuelo esponjoso, dulce de leche artesanal, merengue aireado y coronado con duraznos frescos.',
     price: '$4.500',
+    /* Bottom → top: 5 layers evenly spaced */
     layers: [
-      { name: 'Durazno fresco',          topPercent: 16 },
-      { name: 'Crema chantilly',          topPercent: 31 },
-      { name: 'Merengue italiano',        topPercent: 47 },
-      { name: 'Dulce de leche artesanal', topPercent: 63 },
-      { name: 'Bizcochuelo de vainilla',  topPercent: 78 },
+      { name: 'Bizcochuelo de vainilla', topPercent: 78 },
+      { name: 'Dulce de leche',          topPercent: 63 },
+      { name: 'Merengue',               topPercent: 48 },
+      { name: 'Crema',                  topPercent: 33 },
+      { name: 'Durazno',               topPercent: 17 },
     ],
     imageFull: chajaFull,
     imageExploded: chajaExp,
   },
   {
     id: 'oreo',
-    name: 'Postre Oreo',
+    name: 'La Oreoneta',
     tag: 'El más pedido',
     description:
-      'Irresistible combinación de mousse de chocolate negro con capas de galletas Oreo y crema de queso. Intenso, cremoso y profundamente adictivo desde la primera cucharada.',
+      'Irresistible combinación de capas de Oreo triturada, dulce de leche y crema de leche, coronada con una galleta Oreo entera. Intenso, cremoso y adictivo.',
     price: '$4.800',
+    /* Bottom → top: 6 layers */
     layers: [
-      { name: 'Oreo entera',          topPercent: 16 },
-      { name: 'Crema chantilly',       topPercent: 31 },
-      { name: 'Mousse de chocolate',   topPercent: 47 },
-      { name: 'Crema de queso',        topPercent: 63 },
-      { name: 'Oreo triturada',        topPercent: 78 },
+      { name: 'Triturado galletas de Oreo', topPercent: 82 },
+      { name: 'Dulce de leche',             topPercent: 67 },
+      { name: 'Triturado galletas de Oreo', topPercent: 53 },
+      { name: 'Dulce de leche',             topPercent: 39 },
+      { name: 'Crema de Leche',             topPercent: 25 },
+      { name: 'Galleta Individual Oreo',    topPercent: 12 },
     ],
     imageFull: oreoFull,
     imageExploded: oreoExp,
   },
   {
     id: 'chocotorta',
-    name: 'Chocotorta',
+    name: 'La Chocotorta',
     tag: 'La tentación de chocolate',
     description:
-      'La reina de las tortas argentinas. Chocolinas bañadas en café con dulce de leche cremoso entre capa y capa. Puro sabor patrio en su máxima expresión.',
+      'La reina de las tortas argentinas. Chocolinas bañadas en café alternadas con dulce de leche y queso crema. Puro sabor patrio en su máxima expresión.',
     price: '$4.200',
+    /* Bottom → top: 7 layers */
     layers: [
-      { name: 'Cacao en polvo',          topPercent: 16 },
-      { name: 'Chocolinas',              topPercent: 31 },
-      { name: 'Crema de dulce de leche', topPercent: 47 },
-      { name: 'Chocolinas con café',     topPercent: 63 },
-      { name: 'Crema de dulce de leche', topPercent: 78 },
+      { name: 'Triturado de chocolina',    topPercent: 84 },
+      { name: 'Dulce de leche - Queso crema', topPercent: 73 },
+      { name: 'Triturado de chocolina',    topPercent: 61 },
+      { name: 'Dulce de leche - Queso crema', topPercent: 50 },
+      { name: 'Triturado de chocolina',    topPercent: 38 },
+      { name: 'Dulce de leche - Queso crema', topPercent: 26 },
+      { name: 'Galleta chocolina',         topPercent: 14 },
     ],
     imageFull: chocoFull,
     imageExploded: chocoExp,
