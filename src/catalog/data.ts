@@ -31,13 +31,15 @@ export const desserts: Dessert[] = [
     description:
       'El postre más querido de Vasito Club. Capas de bizcochuelo esponjoso, dulce de leche artesanal, merengue aireado y coronado con duraznos frescos.',
     price: '$4.500',
-    /* Bottom → top: 5 layers evenly spaced */
+    /* Stored bottom → top (index 0 = base).
+       Display reverses this so 01 = Durazno (top), 06 = Bizcochuelo (base). */
     layers: [
-      { name: 'Bizcochuelo de vainilla', topPercent: 78 },
-      { name: 'Dulce de leche',          topPercent: 63 },
-      { name: 'Merengue',               topPercent: 48 },
-      { name: 'Crema',                  topPercent: 33 },
-      { name: 'Durazno',               topPercent: 17 },
+      { name: 'Bizcochuelo de vainilla', topPercent: 84 },
+      { name: 'Dulce de leche',          topPercent: 68 },
+      { name: 'Merengue',               topPercent: 53 },
+      { name: 'Bizcochuelo de vainilla', topPercent: 38 },
+      { name: 'Crema',                  topPercent: 23 },
+      { name: 'Durazno',               topPercent: 10 },
     ],
     imageFull: chajaFull,
     imageExploded: chajaExp,
@@ -48,7 +50,7 @@ export const desserts: Dessert[] = [
     tag: 'El más pedido',
     description:
       'Irresistible combinación de capas de Oreo triturada, dulce de leche y crema de leche, coronada con una galleta Oreo entera. Intenso, cremoso y adictivo.',
-    price: '$4.800',
+    price: '$4.500',
     /* Bottom → top: 6 layers */
     layers: [
       { name: 'Triturado galletas de Oreo', topPercent: 82 },
@@ -63,11 +65,11 @@ export const desserts: Dessert[] = [
   },
   {
     id: 'chocotorta',
-    name: 'La Chocotorta',
+    name: 'La Clasica',
     tag: 'La tentación de chocolate',
     description:
       'La reina de las tortas argentinas. Chocolinas bañadas en café alternadas con dulce de leche y queso crema. Puro sabor patrio en su máxima expresión.',
-    price: '$4.200',
+    price: '$4.500',
     /* Bottom → top: 7 layers */
     layers: [
       { name: 'Triturado de chocolina',    topPercent: 84 },

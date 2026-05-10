@@ -496,10 +496,16 @@
 /* ── Price block ── */
 .ds-price-block {
   display: flex;
-  align-items: baseline;
-  gap: 0.9rem;
+  flex-direction: column;
+  gap: 0.75rem;
   padding-top: 1.4rem;
   border-top: 1px solid var(--border-color);
+}
+
+.ds-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.9rem;
 }
 
 .ds-price-label {
@@ -515,6 +521,30 @@
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.03em;
+}
+
+.ds-price-promo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ds-promo-badge {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  background: rgba(217, 138, 75, 0.1);
+  border: 1px solid rgba(217, 138, 75, 0.25);
+  border-radius: var(--radius-full);
+  padding: 0.3rem 0.85rem;
+  width: fit-content;
+}
+
+.ds-shipping {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
 }
 
 /* ─── Footer ────────────────────────────────────────────────── */
