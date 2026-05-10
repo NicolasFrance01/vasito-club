@@ -1,7 +1,6 @@
 import { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import IngredientLabel from './IngredientLabel';
 import type { Dessert } from '../data';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -11,86 +10,102 @@ interface Props {
 }
 
 export default function DessertSection({ dessert }: Props) {
-  const sectionRef  = useRef<HTMLDivElement>(null);
-  const imgFullRef  = useRef<HTMLImageElement>(null);
-  const imgExpRef   = useRef<HTMLImageElement>(null);
-  const labelsRef   = useRef<(HTMLDivElement | null)[]>([]);
-  const titleRef    = useRef<HTMLHeadingElement>(null);
-  const descRef     = useRef<HTMLParagraphElement>(null);
-  const listRef     = useRef<HTMLUListElement>(null);
-  const priceRef    = useRef<HTMLDivElement>(null);
+  const sectionRef      = useRef<HTMLDivElement>(null);
+  const imgFullRef      = useRef<HTMLImageElement>(null);
+  const imgExpRef       = useRef<HTMLImageElement>(null);
+  const labelDotsRef    = useRef<(HTMLDivElement | null)[]>([]);
+  const tagRef          = useRef<HTMLSpanElement>(null);
+  const titleRef        = useRef<HTMLHeadingElement>(null);
+  const descRef         = useRef<HTMLParagraphElement>(null);
+  const layersTitleRef  = useRef<HTMLHeadingElement>(null);
+  const listItemsRef    = useRef<(HTMLLIElement | null)[]>([]);
+  const priceRef        = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const mm = gsap.matchMedia();
 
-    /* ── Desktop: full scroll-driven animation ── */
+    /* ── Desktop: GSAP pin + scrubbed timeline ─────────────── */
     mm.add('(min-width: 769px)', () => {
-      const section   = sectionRef.current;
-      const imgFull   = imgFullRef.current;
-      const imgExp    = imgExpRef.current;
-      const labels    = labelsRef.current.filter(Boolean) as HTMLDivElement[];
+      const section = sectionRef.current;
+      if (!section) return;
 
-      if (!section || !imgFull || !imgExp) return;
+      const labels    = labelDotsRef.current.filter(Boolean) as HTMLDivElement[];
+      const listItems = listItemsRef.current.filter(Boolean) as HTMLLIElement[];
 
-      /* Main scrubbed timeline — drives the exploded-view transition */
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: section,
           start: 'top top',
-          end: 'bottom bottom',
-          scrub: 1.4,
+          /* Pin duration: 2.2× viewport height per dessert */
+          end: () => `+=${window.innerHeight * 2.2}`,
+          pin: true,
+          scrub: 1.3,
+          anticipatePin: 1,
         },
       });
 
-      /* Phase 1 (0 → 0.5): cross-fade full → exploded */
-      tl.to(imgFull, { opacity: 0, scale: 1.03, duration: 0.5 }, 0)
-        .fromTo(imgExp, { opacity: 0, scale: 0.97 }, { opacity: 1, scale: 1, duration: 0.5 }, '<');
+      /* ── Phase 1 (0→0.8): image assembled → exploded ── */
+      tl.to(imgFullRef.current, { opacity: 0, scale: 1.03, duration: 0.8 }, 0)
+        .fromTo(
+          imgExpRef.current,
+          { opacity: 0, scale: 0.97 },
+          { opacity: 1, scale: 1, duration: 0.8 },
+          '<',
+        );
 
-      /* Phase 2 (0.3 → end): labels appear one by one */
+      /* ── Phase 2 (0.05→0.45): tag + title + description ── */
+      tl.fromTo(tagRef.current,   { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.28 }, 0.05)
+        .fromTo(titleRef.current, { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.35 }, 0.15)
+        .fromTo(descRef.current,  { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.38 }, 0.28);
+
+      /* ── Phase 3 (0.32→0.82): ingredient labels staggered ── */
       labels.forEach((label, i) => {
-        const fromX = label.classList.contains('ing-label--right') ? 24 : -24;
         tl.fromTo(
           label,
-          { opacity: 0, x: fromX },
+          { opacity: 0, x: 22 },
           { opacity: 1, x: 0, duration: 0.28 },
           0.32 + i * 0.1,
         );
       });
 
-      /* Right-panel text — non-scrubbed, triggers once on enter */
-      const textEls = [titleRef.current, descRef.current, listRef.current, priceRef.current];
-      textEls.forEach((el, i) => {
-        if (!el) return;
-        gsap.fromTo(
-          el,
-          { opacity: 0, y: 28 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.65,
-            ease: 'power2.out',
-            delay: i * 0.08,
-            scrollTrigger: {
-              trigger: el,
-              start: 'top 88%',
-              toggleActions: 'play none none reverse',
-            },
-          },
+      /* ── Phase 4 (0.7→1.4): layers list ── */
+      tl.fromTo(
+        layersTitleRef.current,
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.26 },
+        0.7,
+      );
+      listItems.forEach((item, i) => {
+        tl.fromTo(
+          item,
+          { opacity: 0, x: -14 },
+          { opacity: 1, x: 0, duration: 0.24 },
+          0.78 + i * 0.08,
         );
       });
+
+      /* ── Phase 5 (1.5→1.75): price ── */
+      tl.fromTo(
+        priceRef.current,
+        { opacity: 0, y: 14 },
+        { opacity: 1, y: 0, duration: 0.25 },
+        1.5,
+      );
     });
 
-    /* ── Mobile: just make everything visible ── */
+    /* ── Mobile: skip animation, show everything ─────────── */
     mm.add('(max-width: 768px)', () => {
-      const targets = [
+      const allEls = [
         imgExpRef.current,
-        ...labelsRef.current,
+        ...labelDotsRef.current,
+        tagRef.current,
         titleRef.current,
         descRef.current,
-        listRef.current,
+        layersTitleRef.current,
+        ...listItemsRef.current,
         priceRef.current,
       ].filter(Boolean);
-      gsap.set(targets, { opacity: 1, x: 0, y: 0, scale: 1 });
+      gsap.set(allEls, { opacity: 1, x: 0, y: 0, scale: 1 });
     });
 
     return () => mm.revert();
@@ -98,56 +113,77 @@ export default function DessertSection({ dessert }: Props) {
 
   return (
     <div className="ds-section" ref={sectionRef}>
-      {/* ── Left: sticky visual panel ── */}
-      <div className="ds-sticky">
-        <div className="ds-visual">
-          <img
-            ref={imgFullRef}
-            src={dessert.imageFull}
-            alt={dessert.name}
-            className="ds-img"
-          />
-          <img
-            ref={imgExpRef}
-            src={dessert.imageExploded}
-            alt={`${dessert.name} - capas`}
-            className="ds-img ds-img--exploded"
-          />
-          {dessert.layers.map((layer, i) => (
-            <IngredientLabel
-              key={i}
-              layer={layer}
-              ref={(el) => { labelsRef.current[i] = el; }}
+      <div className="ds-layout">
+
+        {/* ── Left: image + floating labels ── */}
+        <div className="ds-image-col">
+          <div className="ds-visual">
+            <img
+              ref={imgFullRef}
+              src={dessert.imageFull}
+              alt={dessert.name}
+              className="ds-img"
             />
-          ))}
-        </div>
-      </div>
+            <img
+              ref={imgExpRef}
+              src={dessert.imageExploded}
+              alt={`${dessert.name} — capas`}
+              className="ds-img ds-img--exploded"
+            />
 
-      {/* ── Right: scrollable info panel ── */}
-      <div className="ds-scroll-panel">
-        <div className="ds-info">
-          <span className="ds-tag">{dessert.tag}</span>
-
-          <h2 ref={titleRef} className="ds-name">{dessert.name}</h2>
-          <p  ref={descRef}  className="ds-desc">{dessert.description}</p>
-
-          <div className="ds-layers-block">
-            <h3 className="ds-layers-heading">Capas &amp; Ingredientes</h3>
-            <ul ref={listRef} className="ds-layers-list">
-              {dessert.layers.map((layer, i) => (
-                <li key={i} className="ds-layer-item">
-                  <span className="ds-layer-num">{String(i + 1).padStart(2, '0')}</span>
-                  <span className="ds-layer-name">{layer.name}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div ref={priceRef} className="ds-price-block">
-            <span className="ds-price-label">Precio unitario</span>
-            <span className="ds-price">{dessert.price}</span>
+            {/* Floating ingredient labels */}
+            {dessert.layers.map((layer, i) => (
+              <div
+                key={i}
+                ref={(el) => { labelDotsRef.current[i] = el; }}
+                className="ing-label"
+                style={{ top: `${layer.topPercent}%`, opacity: 0 }}
+              >
+                <div className="ing-dot" />
+                <div className="ing-line" />
+                <span className="ing-text">{layer.name}</span>
+              </div>
+            ))}
           </div>
         </div>
+
+        {/* ── Right: text content ── */}
+        <div className="ds-text-col">
+          <div className="ds-info">
+            <span ref={tagRef}   className="ds-tag"  style={{ opacity: 0 }}>{dessert.tag}</span>
+            <h2   ref={titleRef} className="ds-name" style={{ opacity: 0 }}>{dessert.name}</h2>
+            <p    ref={descRef}  className="ds-desc" style={{ opacity: 0 }}>{dessert.description}</p>
+
+            <div className="ds-layers-block">
+              <h3
+                ref={layersTitleRef}
+                className="ds-layers-heading"
+                style={{ opacity: 0 }}
+              >
+                Capas &amp; Ingredientes
+              </h3>
+              <ul className="ds-layers-list">
+                {dessert.layers.map((layer, i) => (
+                  <li
+                    key={i}
+                    ref={(el) => { listItemsRef.current[i] = el; }}
+                    className="ds-layer-item"
+                    style={{ opacity: 0 }}
+                  >
+                    <span className="ds-layer-num">{String(i + 1).padStart(2, '0')}</span>
+                    <span className="ds-layer-name">{layer.name}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div ref={priceRef} className="ds-price-block" style={{ opacity: 0 }}>
+              <span className="ds-price-label">Precio unitario</span>
+              <span className="ds-price">{dessert.price}</span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
