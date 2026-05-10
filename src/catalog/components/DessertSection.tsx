@@ -183,8 +183,8 @@ export default function DessertSection({ dessert }: Props) {
                 <span className="ds-price-label">Precio unitario</span>
                 <span className="ds-price">{dessert.price}</span>
               </div>
-              <div className="ds-price-promo">
-                <span className="ds-promo-badge">🎉 Llevando 3 o más: $4.000 c/u</span>
+              <div className="ds-price-aside">
+                <span className="ds-promo-badge">🎉 3 o más: $4.000 c/u</span>
                 <span className="ds-shipping">Envío a consultar</span>
               </div>
             </div>
