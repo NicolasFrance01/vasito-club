@@ -93,7 +93,7 @@ export default function DessertSection({ dessert }: Props) {
       );
     });
 
-    /* ── Mobile: text visible immediately, image fades full→exploded on scroll ── */
+    /* ── Mobile: text visible immediately, image swaps when centered ── */
     mm.add('(max-width: 768px)', () => {
       /* Show all text content right away */
       const textEls = [
@@ -107,24 +107,31 @@ export default function DessertSection({ dessert }: Props) {
       ].filter(Boolean);
       gsap.set(textEls, { opacity: 1, x: 0, y: 0, scale: 1 });
 
-      /* Full image starts visible; exploded fades in when section enters viewport */
-      const section = sectionRef.current;
-      if (!section) return;
+      /* Image swap: full ↔ exploded when image center crosses viewport center */
+      let swapped = false;
 
-      let observer: IntersectionObserver | null = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            gsap.to(imgFullRef.current,  { opacity: 0, duration: 0.65, delay: 0.15 });
-            gsap.to(imgExpRef.current,   { opacity: 1, duration: 0.65, delay: 0.15 });
-            observer?.disconnect();
-            observer = null;
-          }
-        },
-        { threshold: 0.2 },
-      );
-      observer.observe(section);
+      const checkPosition = () => {
+        const img = imgFullRef.current;
+        if (!img) return;
+        const rect = img.getBoundingClientRect();
+        const imgCenter = rect.top + rect.height / 2;
+        const vCenter   = window.innerHeight / 2;
 
-      return () => { observer?.disconnect(); observer = null; };
+        if (imgCenter <= vCenter && !swapped) {
+          gsap.to(imgFullRef.current, { opacity: 0, duration: 0.5, overwrite: true });
+          gsap.to(imgExpRef.current,  { opacity: 1, duration: 0.5, overwrite: true });
+          swapped = true;
+        } else if (imgCenter > vCenter && swapped) {
+          gsap.to(imgFullRef.current, { opacity: 1, duration: 0.5, overwrite: true });
+          gsap.to(imgExpRef.current,  { opacity: 0, duration: 0.5, overwrite: true });
+          swapped = false;
+        }
+      };
+
+      window.addEventListener('scroll', checkPosition, { passive: true });
+      checkPosition();
+
+      return () => window.removeEventListener('scroll', checkPosition);
     });
 
     return () => mm.revert();
