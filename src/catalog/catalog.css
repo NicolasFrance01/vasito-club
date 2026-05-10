@@ -480,9 +480,16 @@
   max-width: 400px;
 }
 
-/* ── Layers block ── */
+/* ── Layers block — hidden on desktop (bubbles cover it), visible on mobile ── */
 .ds-layers-block {
   margin-bottom: 1rem;
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .ds-layers-block {
+    display: block;
+  }
 }
 
 .ds-layers-heading {
