@@ -57,7 +57,7 @@ export const desserts: Dessert[] = [
       { name: 'Dulce de leche', topPercent: 67 },
       { name: 'Triturado galletas de Oreo', topPercent: 53 },
       { name: 'Dulce de leche', topPercent: 39 },
-      { name: 'Crema de Leche', topPercent: 25 },
+      { name: 'Crema', topPercent: 25 },
       { name: 'Galleta Individual Oreo', topPercent: 12 },
     ],
     imageFull: oreoFull,
@@ -73,11 +73,11 @@ export const desserts: Dessert[] = [
     /* Bottom → top: 7 layers */
     layers: [
       { name: 'Triturado de chocolina', topPercent: 84 },
-      { name: 'Dulce de leche - Queso crema', topPercent: 73 },
+      { name: 'Dulce de leche - Crema', topPercent: 73 },
       { name: 'Triturado de chocolina', topPercent: 61 },
-      { name: 'Dulce de leche - Queso crema', topPercent: 50 },
+      { name: 'Dulce de leche - Crema', topPercent: 50 },
       { name: 'Triturado de chocolina', topPercent: 38 },
-      { name: 'Dulce de leche - Queso crema', topPercent: 26 },
+      { name: 'Dulce de leche - Crema', topPercent: 26 },
       { name: 'Galleta chocolina', topPercent: 14 },
     ],
     imageFull: chocoFull,
