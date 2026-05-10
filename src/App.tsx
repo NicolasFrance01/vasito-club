@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
+import CatalogApp from './catalog/CatalogApp';
 import Dashboard from './pages/Dashboard';
 import Catalog from './pages/Catalog';
 import Stock from './pages/Stock';
@@ -35,6 +36,7 @@ function AppRoutes() {
       <Route path="/recipes" element={<ProtectedRoute><Layout><Recipes /></Layout></ProtectedRoute>} />
       <Route path="/reports" element={<ProtectedRoute><Layout><Reports /></Layout></ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute adminOnly><Layout><Users /></Layout></ProtectedRoute>} />
+      <Route path="/catalogo" element={<CatalogApp />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
