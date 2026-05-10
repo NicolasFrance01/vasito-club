@@ -130,6 +130,29 @@
   transform: translateY(-1px);
 }
 
+/* Postres pill */
+.cat-nav-postres {
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--radius-full);
+  background: rgba(62, 39, 35, 0.07);
+  transition: background 0.2s ease;
+  gap: 0.35rem;
+}
+
+.cat-nav-postres:hover {
+  background: rgba(62, 39, 35, 0.13);
+  color: var(--text-primary);
+}
+
+/* Postres dropdown item dot */
+.cat-postres-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  flex-shrink: 0;
+}
+
 /* ── Contact dropdown ── */
 .cat-contact-wrap {
   position: relative;
@@ -660,6 +683,8 @@
 
   .cat-nav-ig span { display: none; }  /* icon only on mobile */
   .cat-nav-ig { padding: 0.4rem 0.55rem; }
+
+  .cat-nav-postres { padding: 0.4rem 0.75rem; font-size: 0.72rem; }
 
   .cat-nav-cta {
     padding: 0.4rem 0.85rem;

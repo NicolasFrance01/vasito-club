@@ -112,7 +112,7 @@ export default function DessertSection({ dessert }: Props) {
   }, []);
 
   return (
-    <div className="ds-section" ref={sectionRef}>
+    <div className="ds-section" id={dessert.id} ref={sectionRef}>
       <div className="ds-layout">
 
         {/* ── Left: image + floating labels ── */}
