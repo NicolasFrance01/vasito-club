@@ -93,10 +93,10 @@ export default function DessertSection({ dessert }: Props) {
       );
     });
 
-    /* ── Mobile: skip animation, show everything ─────────── */
+    /* ── Mobile: text visible immediately, image fades full→exploded on scroll ── */
     mm.add('(max-width: 768px)', () => {
-      const allEls = [
-        imgExpRef.current,
+      /* Show all text content right away */
+      const textEls = [
         ...labelDotsRef.current,
         tagRef.current,
         titleRef.current,
@@ -105,7 +105,26 @@ export default function DessertSection({ dessert }: Props) {
         ...listItemsRef.current,
         priceRef.current,
       ].filter(Boolean);
-      gsap.set(allEls, { opacity: 1, x: 0, y: 0, scale: 1 });
+      gsap.set(textEls, { opacity: 1, x: 0, y: 0, scale: 1 });
+
+      /* Full image starts visible; exploded fades in when section enters viewport */
+      const section = sectionRef.current;
+      if (!section) return;
+
+      let observer: IntersectionObserver | null = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            gsap.to(imgFullRef.current,  { opacity: 0, duration: 0.65, delay: 0.15 });
+            gsap.to(imgExpRef.current,   { opacity: 1, duration: 0.65, delay: 0.15 });
+            observer?.disconnect();
+            observer = null;
+          }
+        },
+        { threshold: 0.2 },
+      );
+      observer.observe(section);
+
+      return () => { observer?.disconnect(); observer = null; };
     });
 
     return () => mm.revert();

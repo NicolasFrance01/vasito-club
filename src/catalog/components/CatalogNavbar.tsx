@@ -40,7 +40,15 @@ function ChevronIcon({ open }: { open: boolean }) {
 
 export default function CatalogNavbar() {
   const [open, setOpen] = useState<OpenMenu>(null);
+  const [scrolled, setScrolled] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
+
+  /* Frosted glass once user scrolls past hero */
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   /* Close on outside click */
   useEffect(() => {
@@ -64,7 +72,7 @@ export default function CatalogNavbar() {
   };
 
   return (
-    <nav className="cat-navbar">
+    <nav className={`cat-navbar${scrolled ? ' cat-navbar--scrolled' : ''}`}>
       <div className="cat-navbar-inner" ref={navRef}>
         <img src={logoUrl} alt="Vasito Club" className="cat-navbar-logo" />
 
