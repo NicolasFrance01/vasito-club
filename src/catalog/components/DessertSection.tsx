@@ -163,9 +163,10 @@ export default function DessertSection({ dessert }: Props) {
                 Capas &amp; Ingredientes
               </h3>
               <ul className="ds-layers-list">
-                {dessert.layers.map((layer, i) => (
+                {/* Reverse so 01 = top layer, last number = base layer */}
+                {[...dessert.layers].reverse().map((layer, i) => (
                   <li
-                    key={i}
+                    key={layer.name + i}
                     ref={(el) => { listItemsRef.current[i] = el; }}
                     className="ds-layer-item"
                     style={{ opacity: 0 }}

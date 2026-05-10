@@ -12,24 +12,43 @@
   position: relative;
 }
 
-/* ─── Watermark ─────────────────────────────────────────────── */
+/* ─── Watermark — diagonal grid covers entire page ──────────── */
 .wm-bg {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  top:    -60vh;
+  left:   -60vw;
+  width:  220vw;
+  height: 220vh;
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
+  transform: rotate(-18deg);
+  transform-origin: center center;
+
+  /* Grid auto-fills with logos */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 52px);
+  gap: 3.2rem;
+  align-content: start;
+  justify-items: center;
 }
 
 .wm-logo {
-  position: absolute;
-  opacity: 0.045;
-  filter: grayscale(100%) brightness(0.7);
-  object-fit: contain;
+  width: 52px;
   height: auto;
+  opacity: 0.055;
+  filter: grayscale(100%) brightness(0.55);
+  object-fit: contain;
+  display: block;
   user-select: none;
   -webkit-user-drag: none;
 }
+
+/* Subtle opacity variation for organic feel */
+.wm-logo:nth-child(3n)   { opacity: 0.032; }
+.wm-logo:nth-child(5n)   { opacity: 0.07;  }
+.wm-logo:nth-child(7n+1) { opacity: 0.042; }
+.wm-logo:nth-child(11n)  { opacity: 0.025; }
 
 /* ─── Navbar — fully transparent ───────────────────────────── */
 .cat-navbar {
