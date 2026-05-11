@@ -4,7 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
-import { ArrowLeft, TrendingUp, TrendingDown } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, Percent } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { subDays, startOfWeek, startOfMonth, isAfter, parseISO } from 'date-fns';
 
@@ -64,7 +64,9 @@ const Reports: React.FC = () => {
       });
     });
 
-    const totalRevenue = filteredOrders.reduce((sum, o) => sum + o.total, 0);
+    const totalRevenue = filteredOrders
+      .filter(o => o.paymentStatus === 'Pagado')
+      .reduce((sum, o) => sum + o.total, 0);
     const totalCost = filteredFinances.reduce((sum, f) => sum + f.totalCost, 0);
 
     return {
@@ -112,6 +114,15 @@ const Reports: React.FC = () => {
           <div className="stat-info">
             <p className="text-gray text-sm">Vendido ({timeFilter})</p>
             <h3>${profitAnalysis[0].value.toLocaleString()}</h3>
+          </div>
+        </div>
+        <div className="card stat-card">
+          <div className="stat-icon" style={{ backgroundColor: 'rgba(123, 31, 162, 0.1)' }}>
+            <Percent size={24} color="#7B1FA2" />
+          </div>
+          <div className="stat-info">
+            <p className="text-gray text-sm">Diezmo (10%)</p>
+            <h3>${(profitAnalysis[0].value * 0.1).toLocaleString()}</h3>
           </div>
         </div>
         <div className="card stat-card">

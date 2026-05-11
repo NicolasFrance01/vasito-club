@@ -45,8 +45,37 @@
   margin-top: 1rem;
 }
 
-.recent-orders h2 {
+.orders-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
   margin-bottom: 1.5rem;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 0.4rem 0.9rem;
+  color: var(--text-secondary);
+}
+
+.search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  width: 240px;
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
 }
 
 .orders-list {
@@ -79,6 +108,13 @@
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  flex-shrink: 0;
+}
+
+.order-selects {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .status-select {
@@ -102,6 +138,11 @@
 .status-en-envío { background-color: #F3E8FF; color: #6B21A8; }
 .status-entregado { background-color: #D1FAE5; color: #065F46; }
 .status-cancelado { background-color: #FEE2E2; color: #991B1B; }
+
+/* Payment status colors */
+.payment-pendiente-de-pago { background-color: #FEF3C7; color: #92400E; }
+.payment-entregado-sin-pago { background-color: #FFEDD5; color: #9A3412; }
+.payment-pagado { background-color: #D1FAE5; color: #065F46; }
 
 .status-select:hover {
   filter: brightness(0.95);
@@ -184,6 +225,13 @@
 
 .maps-link:hover {
   background: rgba(26, 115, 232, 0.15);
+}
+
+.order-notes {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-top: 0.35rem;
+  font-style: italic;
 }
 
 .order-audit-info {

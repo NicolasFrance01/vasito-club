@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import type { Order, CatalogItem, StockItem, FinanceRecord, Customer, Recipe } from './types';
+import type { Order, CatalogItem, StockItem, FinanceRecord, Customer, Recipe, PaymentStatus } from './types';
 
 interface AppDataState {
   orders: Order[];
@@ -10,6 +10,7 @@ interface AppDataState {
   customers: Customer[];
   addOrder: (order: Order) => Promise<void>;
   updateOrderStatus: (id: string, status: Order['status']) => Promise<void>;
+  updateOrderPaymentStatus: (id: string, paymentStatus: PaymentStatus) => Promise<void>;
   addCatalogItem: (item: CatalogItem) => Promise<void>;
   updateCatalogItem: (item: CatalogItem) => Promise<void>;
   deleteCatalogItem: (id: string) => Promise<void>;
@@ -122,6 +123,22 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
           userId: currentUser?.id,
           username: currentUser?.username
         })
+      });
+      if (res.ok) {
+        const updatedOrder = await res.json();
+        setOrders(prev => prev.map(o => o.id === id ? updatedOrder : o));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const updateOrderPaymentStatus = async (id: string, paymentStatus: PaymentStatus) => {
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, paymentStatus })
       });
       if (res.ok) {
         const updatedOrder = await res.json();
@@ -332,7 +349,7 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
   return (
     <AppDataContext.Provider value={{
       orders, catalog, stock, finances, customers, recipes, revisions,
-      addOrder, updateOrderStatus, updateOrder, deleteOrder, addCatalogItem, updateCatalogItem, deleteCatalogItem, updateStock, updateStockItem, deleteStockItem, addStockItem, addFinanceRecord, updateFinanceRecord, deleteFinanceRecord, addRecipe, refreshStock, isLoading
+      addOrder, updateOrderStatus, updateOrderPaymentStatus, updateOrder, deleteOrder, addCatalogItem, updateCatalogItem, deleteCatalogItem, updateStock, updateStockItem, deleteStockItem, addStockItem, addFinanceRecord, updateFinanceRecord, deleteFinanceRecord, addRecipe, refreshStock, isLoading
     }}>
       {children}
     </AppDataContext.Provider>

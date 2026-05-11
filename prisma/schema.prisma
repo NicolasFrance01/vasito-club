@@ -23,11 +23,13 @@ model Order {
   customerName      String
   phone             String?
   address           String?
+  notes             String?
   delivery          Boolean     @default(false)
   deliveryCost      Float       @default(0)
   date              DateTime    @default(now())
   paymentMethod     String      @default("Efectivo")
   status            String      @default("Pendiente")
+  paymentStatus     String      @default("Pendiente de pago")
   total             Float
   items             OrderItem[]
   createdById       String?

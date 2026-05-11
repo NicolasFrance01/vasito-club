@@ -1,5 +1,6 @@
 export type OrderStatus = 'Pendiente' | 'En Elaboración' | 'En Envío' | 'Entregado' | 'Cancelado';
 export type PaymentMethod = 'Efectivo' | 'Transferencia';
+export type PaymentStatus = 'Pendiente de pago' | 'Entregado sin Pago' | 'Pagado';
 export type UserRole = 'admin' | 'user';
 
 export interface User {
@@ -35,12 +36,14 @@ export interface Order {
   customerName: string;
   phone: string;
   address?: string;
+  notes?: string;
   items: OrderItem[];
   delivery: boolean;
   deliveryCost: number;
   date: string;
   paymentMethod: PaymentMethod;
   status: OrderStatus;
+  paymentStatus: PaymentStatus;
   total: number;
   createdById?: string;
   createdByUsername?: string;

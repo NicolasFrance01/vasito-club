@@ -16,18 +16,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'POST') {
     try {
-      const { customerName, phone, address, delivery, deliveryCost, date, paymentMethod, status, total, items, userId, username } = req.body;
-      
+      const { customerName, phone, address, notes, delivery, deliveryCost, date, paymentMethod, status, paymentStatus, total, items, userId, username } = req.body;
+
       const newOrder = await prisma.order.create({
         data: {
           customerName,
           phone,
           address,
+          notes,
           delivery,
           deliveryCost,
           date: new Date(date),
           paymentMethod,
           status,
+          paymentStatus: paymentStatus || 'Pendiente de pago',
           total,
           createdById: userId,
           createdByUsername: username,
@@ -67,20 +69,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'PATCH') {
     try {
-      const { id, status, userId, username } = req.body;
+      const { id, status, paymentStatus, userId, username } = req.body;
+      const data: any = {};
+      if (status !== undefined) {
+        data.status = status;
+        data.history = { create: { status, userId, username, date: new Date() } };
+      }
+      if (paymentStatus !== undefined) {
+        data.paymentStatus = paymentStatus;
+      }
       const updatedOrder = await prisma.order.update({
         where: { id: String(id) },
-        data: { 
-          status,
-          history: {
-            create: {
-              status,
-              userId,
-              username,
-              date: new Date()
-            }
-          }
-        },
+        data,
         include: { items: true, history: true },
       });
       return res.status(200).json(updatedOrder);
@@ -92,8 +92,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'PUT') {
     try {
-      const { id, customerName, phone, address, delivery, deliveryCost, date, paymentMethod, status, total, items } = req.body;
-      
+      const { id, customerName, phone, address, notes, delivery, deliveryCost, date, paymentMethod, status, paymentStatus, total, items } = req.body;
+
       await prisma.orderItem.deleteMany({
         where: { orderId: String(id) }
       });
@@ -104,11 +104,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           customerName,
           phone,
           address,
+          notes,
           delivery,
           deliveryCost,
           date: new Date(date),
           paymentMethod,
           status,
+          paymentStatus: paymentStatus || 'Pendiente de pago',
           total,
           items: {
             create: items.map((item: any) => ({

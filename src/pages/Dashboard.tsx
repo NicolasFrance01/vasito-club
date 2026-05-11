@@ -1,19 +1,35 @@
 import React, { useState } from 'react';
 import { useAppData } from '../AppDataContext';
-import { PlusCircle, TrendingUp, Clock, Package, Edit, Trash2, User, History, Truck, MapPin } from 'lucide-react';
+import { PlusCircle, TrendingUp, Clock, Package, Edit, Trash2, User, History, Truck, MapPin, Search } from 'lucide-react';
 import NewOrderModal from '../components/NewOrderModal';
-import type { Order } from '../types';
+import type { Order, PaymentStatus } from '../types';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
-  const { orders, catalog, deleteOrder, updateOrderStatus } = useAppData();
+  const { orders, catalog, deleteOrder, updateOrderStatus, updateOrderPaymentStatus } = useAppData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [orderToEdit, setOrderToEdit] = useState<Order | undefined>(undefined);
+  const [search, setSearch] = useState('');
 
-  // Quick stats calculations
   const todaysOrders = orders.filter(o => new Date(o.date).toDateString() === new Date().toDateString());
-  const todaysRevenue = todaysOrders.reduce((sum, o) => sum + o.total, 0);
-  const pendingOrders = orders.filter(o => o.status === 'Pendiente' || o.status === 'En Elaboración' || o.status === 'En Envío');
+  const todaysRevenue = todaysOrders
+    .filter(o => o.paymentStatus === 'Pagado')
+    .reduce((sum, o) => sum + o.total, 0);
+  const pendingOrders = orders.filter(o => ['Pendiente', 'En Elaboración', 'En Envío'].includes(o.status));
+
+  const q = search.toLowerCase().trim();
+  const filteredOrders = q
+    ? orders.filter(o =>
+        o.customerName.toLowerCase().includes(q) ||
+        o.phone?.toLowerCase().includes(q) ||
+        o.address?.toLowerCase().includes(q) ||
+        o.notes?.toLowerCase().includes(q) ||
+        o.items.some(item => {
+          const name = catalog.find(c => c.id === item.catalogId)?.name ?? '';
+          return name.toLowerCase().includes(q);
+        })
+      )
+    : orders;
 
   return (
     <div className="dashboard animate-fade-in">
@@ -34,7 +50,7 @@ const Dashboard: React.FC = () => {
             <TrendingUp size={24} color="var(--accent-color)" />
           </div>
           <div className="stat-info">
-            <p className="text-gray">Ventas de Hoy</p>
+            <p className="text-gray">Ventas de Hoy (cobradas)</p>
             <h3>${todaysRevenue.toLocaleString()}</h3>
           </div>
         </div>
@@ -60,20 +76,32 @@ const Dashboard: React.FC = () => {
 
       <div className="dashboard-content">
         <div className="card recent-orders">
-          <h2 className="text-xl">Pedidos Recientes</h2>
-          {orders.length === 0 ? (
+          <div className="orders-list-header">
+            <h2 className="text-xl">Todos los Pedidos</h2>
+            <div className="search-box">
+              <Search size={15} />
+              <input
+                type="text"
+                placeholder="Buscar por cliente, postre, dirección..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="search-input"
+              />
+            </div>
+          </div>
+
+          {filteredOrders.length === 0 ? (
             <div className="empty-state">
-              <p>No hay pedidos todavía. ¡Empieza creando uno nuevo!</p>
+              <p>{search ? 'No se encontraron pedidos con esa búsqueda.' : 'No hay pedidos todavía. ¡Empieza creando uno nuevo!'}</p>
             </div>
           ) : (
             <div className="orders-list">
-              {orders.slice(0, 10).map(order => (
+              {filteredOrders.map(order => (
                 <div key={order.id} className="order-item">
                   <div className="order-info">
                     <h4>{order.customerName}</h4>
                     <p className="text-sm text-gray">{new Date(order.date).toLocaleString('es-AR')}</p>
 
-                    {/* Postres y cantidades */}
                     {order.items.length > 0 && (
                       <div className="order-products-row">
                         {order.items.map((item, idx) => {
@@ -87,7 +115,10 @@ const Dashboard: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Envío */}
+                    {order.notes && (
+                      <p className="order-notes">📝 {order.notes}</p>
+                    )}
+
                     <div className="order-delivery-row">
                       {order.delivery ? (
                         <>
@@ -126,29 +157,41 @@ const Dashboard: React.FC = () => {
                       )}
                     </div>
                   </div>
+
                   <div className="order-status-actions">
-                    <select 
-                      className={`status-select status-${order.status.toLowerCase().replace(/ /g, '-')}`}
-                      value={order.status}
-                      onChange={(e) => updateOrderStatus(order.id, e.target.value as Order['status'])}
-                    >
-                      <option value="Pendiente">Pendiente</option>
-                      <option value="En Elaboración">En Elaboración</option>
-                      <option value="En Envío">En Envío</option>
-                      <option value="Entregado">Entregado</option>
-                      <option value="Cancelado">Cancelado</option>
-                    </select>
+                    <div className="order-selects">
+                      <select
+                        className={`status-select status-${order.status.toLowerCase().replace(/ /g, '-')}`}
+                        value={order.status}
+                        onChange={e => updateOrderStatus(order.id, e.target.value as Order['status'])}
+                      >
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="En Elaboración">En Elaboración</option>
+                        <option value="En Envío">En Envío</option>
+                        <option value="Entregado">Entregado</option>
+                        <option value="Cancelado">Cancelado</option>
+                      </select>
+                      <select
+                        className={`status-select payment-${order.paymentStatus?.toLowerCase().replace(/ /g, '-') ?? 'pendiente-de-pago'}`}
+                        value={order.paymentStatus ?? 'Pendiente de pago'}
+                        onChange={e => updateOrderPaymentStatus(order.id, e.target.value as PaymentStatus)}
+                      >
+                        <option value="Pendiente de pago">Pendiente de pago</option>
+                        <option value="Entregado sin Pago">Entregado sin Pago</option>
+                        <option value="Pagado">Pagado</option>
+                      </select>
+                    </div>
                     <span className="order-total">${order.total.toLocaleString()}</span>
                     <div className="item-actions">
-                      <button 
-                        className="btn btn-secondary icon-btn" 
+                      <button
+                        className="btn btn-secondary icon-btn"
                         title="Editar Pedido"
                         onClick={() => { setOrderToEdit(order); setIsModalOpen(true); }}
                       >
                         <Edit size={16} />
                       </button>
-                      <button 
-                        className="btn btn-danger icon-btn" 
+                      <button
+                        className="btn btn-danger icon-btn"
                         title="Eliminar Pedido"
                         onClick={() => {
                           if (window.confirm('¿Estás seguro de eliminar este pedido?')) {

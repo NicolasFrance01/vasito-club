@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { X, Plus, Trash2, RotateCcw } from 'lucide-react';
 import { useAppData } from '../AppDataContext';
-import type { Order, OrderItem, PaymentMethod } from '../types';
+import type { Order, OrderItem, PaymentMethod, PaymentStatus } from '../types';
 import './NewOrderModal.css';
 
 interface Props {
@@ -12,60 +12,58 @@ interface Props {
 
 const NewOrderModal: React.FC<Props> = ({ onClose, orderToEdit }) => {
   const { catalog, addOrder, updateOrder } = useAppData();
-  
+
   const [customerName, setCustomerName] = useState(orderToEdit?.customerName || '');
   const [phone, setPhone] = useState(orderToEdit?.phone || '');
   const [address, setAddress] = useState(orderToEdit?.address || '');
+  const [notes, setNotes] = useState(orderToEdit?.notes || '');
   const [delivery, setDelivery] = useState(orderToEdit?.delivery || false);
   const [deliveryCost, setDeliveryCost] = useState(orderToEdit?.deliveryCost || 1000);
-  
-  const initialDate = orderToEdit 
-    ? new Date(orderToEdit.date).toISOString().slice(0, 16) 
+
+  const initialDate = orderToEdit
+    ? new Date(orderToEdit.date).toISOString().slice(0, 16)
     : new Date().toISOString().slice(0, 16);
   const [date, setDate] = useState(initialDate);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(orderToEdit?.paymentMethod || 'Efectivo');
-  
-  const [items, setItems] = useState<OrderItem[]>(orderToEdit?.items.length ? orderToEdit.items : [{ catalogId: '', quantity: 1 }]);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(orderToEdit?.paymentStatus || 'Pendiente de pago');
 
-  const handleAddItem = () => {
-    setItems([...items, { catalogId: '', quantity: 1 }]);
-  };
+  const [items, setItems] = useState<OrderItem[]>(
+    orderToEdit?.items.length ? orderToEdit.items : [{ catalogId: '', quantity: 1 }]
+  );
+  const [totalOverride, setTotalOverride] = useState<number | null>(null);
 
-  const handleRemoveItem = (index: number) => {
-    setItems(items.filter((_, i) => i !== index));
-  };
+  const handleAddItem = () => setItems([...items, { catalogId: '', quantity: 1 }]);
 
-  const handleItemChange = (index: number, field: keyof OrderItem, value: any) => {
+  const handleRemoveItem = (index: number) => setItems(items.filter((_, i) => i !== index));
+
+  const handleItemChange = (index: number, field: keyof OrderItem, value: string | number) => {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
     setItems(newItems);
   };
 
-  const getAppliedPromo = (catalogId: string, quantity: number) => {
+  /* Promo: applies per-item threshold OR when total quantity across all items >= 3 */
+  const totalQuantity = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+
+  const getAppliedPromo = (catalogId: string, qty: number) => {
     const catItem = catalog.find(c => c.id === catalogId);
-    if (!catItem || !catItem.promos || !Array.isArray(catItem.promos)) return null;
-    
-    // Find the highest threshold that is <= current quantity
-    const applicablePromos = catItem.promos
-      .filter((p: any) => quantity >= p.quantity)
-      .sort((a: any, b: any) => b.quantity - a.quantity);
-      
-    return applicablePromos[0] || null;
+    if (!catItem?.promos || !Array.isArray(catItem.promos)) return null;
+    return catItem.promos
+      .filter((p: any) => qty >= p.quantity)
+      .sort((a: any, b: any) => b.quantity - a.quantity)[0] || null;
   };
 
-  const calculateSubtotal = () => {
-    return items.reduce((sum, item) => {
-      const catItem = catalog.find(c => c.id === item.catalogId);
-      if (!catItem) return sum;
-      
-      const promo = getAppliedPromo(item.catalogId, item.quantity);
-      const unitPrice = promo ? promo.promoPrice : catItem.price;
-      
-      return sum + (unitPrice * item.quantity);
-    }, 0);
-  };
+  const getEffectivePromo = (catalogId: string, itemQty: number) =>
+    getAppliedPromo(catalogId, Math.max(itemQty, totalQuantity));
 
-  const total = calculateSubtotal() + (delivery ? deliveryCost : 0);
+  const calculatedTotal = items.reduce((sum, item) => {
+    const catItem = catalog.find(c => c.id === item.catalogId);
+    if (!catItem) return sum;
+    const promo = getEffectivePromo(item.catalogId, item.quantity);
+    return sum + ((promo ? promo.promoPrice : catItem.price) * item.quantity);
+  }, 0) + (delivery ? deliveryCost : 0);
+
+  const total = totalOverride !== null ? totalOverride : calculatedTotal;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,13 +77,15 @@ const NewOrderModal: React.FC<Props> = ({ onClose, orderToEdit }) => {
       customerName,
       phone,
       address: delivery ? address : undefined,
+      notes: notes || undefined,
       delivery,
       deliveryCost: delivery ? deliveryCost : 0,
-      date: new Date(date).toISOString(), // ensure ISO format
+      date: new Date(date).toISOString(),
       paymentMethod,
+      paymentStatus,
       items: items.filter(i => i.catalogId && i.quantity > 0),
       status: orderToEdit ? orderToEdit.status : 'Pendiente',
-      total
+      total,
     };
 
     if (orderToEdit) {
@@ -117,10 +117,10 @@ const NewOrderModal: React.FC<Props> = ({ onClose, orderToEdit }) => {
                 <input type="tel" className="input" value={phone} onChange={e => setPhone(e.target.value)} />
               </div>
             </div>
-            
+
             <div className="form-row">
               <div className="input-group">
-                <label>Fecha y Hora (Argentina)</label>
+                <label>Fecha y Hora</label>
                 <input type="datetime-local" className="input" value={date} onChange={e => setDate(e.target.value)} required />
               </div>
               <div className="input-group">
@@ -128,6 +128,17 @@ const NewOrderModal: React.FC<Props> = ({ onClose, orderToEdit }) => {
                 <select className="input" value={paymentMethod} onChange={e => setPaymentMethod(e.target.value as PaymentMethod)}>
                   <option value="Efectivo">Efectivo</option>
                   <option value="Transferencia">Transferencia</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="input-group">
+                <label>Estado de Pago</label>
+                <select className="input" value={paymentStatus} onChange={e => setPaymentStatus(e.target.value as PaymentStatus)}>
+                  <option value="Pendiente de pago">Pendiente de pago</option>
+                  <option value="Entregado sin Pago">Entregado sin Pago</option>
+                  <option value="Pagado">Pagado</option>
                 </select>
               </div>
             </div>
@@ -159,9 +170,15 @@ const NewOrderModal: React.FC<Props> = ({ onClose, orderToEdit }) => {
 
           <div className="form-section">
             <h3>Postres</h3>
+            {totalQuantity >= 3 && (
+              <div style={{ marginBottom: '0.75rem' }}>
+                <span className="badge badge-ready text-xs">🎉 Promo activa — pedido de {totalQuantity} unidades, precio $4.000 c/u</span>
+              </div>
+            )}
             <div className="items-list">
               {items.map((item, index) => {
-                const appliedPromo = item.catalogId ? getAppliedPromo(item.catalogId, item.quantity) : null;
+                const promo = item.catalogId ? getEffectivePromo(item.catalogId, item.quantity) : null;
+                const isTotalPromo = promo && totalQuantity >= 3 && item.quantity < 3;
                 return (
                   <div key={index} className="item-row" style={{ flexWrap: 'wrap' }}>
                     <div className="input-group" style={{ flex: 3, minWidth: '200px', marginBottom: 0 }}>
@@ -180,10 +197,10 @@ const NewOrderModal: React.FC<Props> = ({ onClose, orderToEdit }) => {
                         <Trash2 size={18} />
                       </button>
                     )}
-                    {appliedPromo && (
+                    {promo && (
                       <div style={{ width: '100%', marginTop: '0.25rem' }}>
                         <span className="badge badge-ready text-xs">
-                          🎉 ¡Precio mayorista aplicado! (${appliedPromo.promoPrice.toLocaleString()} c/u)
+                          🎉 {isTotalPromo ? 'Promo por total del pedido' : 'Precio mayorista'} (${promo.promoPrice.toLocaleString()} c/u)
                         </span>
                       </div>
                     )}
@@ -196,10 +213,43 @@ const NewOrderModal: React.FC<Props> = ({ onClose, orderToEdit }) => {
             </button>
           </div>
 
+          <div className="form-section">
+            <h3>Notas / Detalle</h3>
+            <div className="input-group">
+              <textarea
+                className="input"
+                rows={3}
+                placeholder="Indicaciones especiales, sabores, mensaje, etc."
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                style={{ resize: 'vertical' }}
+              />
+            </div>
+          </div>
+
           <div className="modal-footer">
             <div className="total-display">
               <span>Total a Pagar:</span>
-              <h3>${total.toLocaleString()}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>$</span>
+                <input
+                  type="number"
+                  className="input"
+                  style={{ width: '130px', fontSize: '1.4rem', fontWeight: 700, padding: '0.3rem 0.5rem' }}
+                  value={totalOverride !== null ? totalOverride : calculatedTotal}
+                  onChange={e => setTotalOverride(Number(e.target.value))}
+                />
+                {totalOverride !== null && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary icon-btn"
+                    title="Restaurar total automático"
+                    onClick={() => setTotalOverride(null)}
+                  >
+                    <RotateCcw size={15} />
+                  </button>
+                )}
+              </div>
             </div>
             <div className="actions">
               <button type="button" className="btn btn-secondary" onClick={onClose}>Cancelar</button>
