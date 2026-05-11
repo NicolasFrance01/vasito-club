@@ -140,6 +140,52 @@
   border: 1px dashed var(--border-color);
 }
 
+.order-products-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.order-product-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  background: rgba(217, 138, 75, 0.1);
+  border: 1px solid rgba(217, 138, 75, 0.25);
+  border-radius: var(--radius-full);
+  padding: 0.15rem 0.6rem;
+  white-space: nowrap;
+}
+
+.order-delivery-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.maps-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1a73e8;
+  text-decoration: none;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--radius-full);
+  background: rgba(26, 115, 232, 0.08);
+  border: 1px solid rgba(26, 115, 232, 0.2);
+  transition: background 0.15s ease;
+}
+
+.maps-link:hover {
+  background: rgba(26, 115, 232, 0.15);
+}
+
 .order-audit-info {
   display: flex;
   flex-direction: column;

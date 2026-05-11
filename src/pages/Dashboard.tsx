@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useAppData } from '../AppDataContext';
-import { PlusCircle, TrendingUp, Clock, Package, Edit, Trash2, User, History } from 'lucide-react';
+import { PlusCircle, TrendingUp, Clock, Package, Edit, Trash2, User, History, Truck, MapPin } from 'lucide-react';
 import NewOrderModal from '../components/NewOrderModal';
 import type { Order } from '../types';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
-  const { orders, deleteOrder, updateOrderStatus } = useAppData();
+  const { orders, catalog, deleteOrder, updateOrderStatus } = useAppData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [orderToEdit, setOrderToEdit] = useState<Order | undefined>(undefined);
 
@@ -72,6 +72,47 @@ const Dashboard: React.FC = () => {
                   <div className="order-info">
                     <h4>{order.customerName}</h4>
                     <p className="text-sm text-gray">{new Date(order.date).toLocaleString('es-AR')}</p>
+
+                    {/* Postres y cantidades */}
+                    {order.items.length > 0 && (
+                      <div className="order-products-row">
+                        {order.items.map((item, idx) => {
+                          const name = catalog.find(c => c.id === item.catalogId)?.name ?? item.catalogId;
+                          return (
+                            <span key={idx} className="order-product-tag">
+                              {name} ×{item.quantity}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Envío */}
+                    <div className="order-delivery-row">
+                      {order.delivery ? (
+                        <>
+                          <Truck size={13} />
+                          <span>Con envío</span>
+                          {order.address && (
+                            <a
+                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address)}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="maps-link"
+                            >
+                              <MapPin size={12} />
+                              Ver en Maps
+                            </a>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <Package size={13} />
+                          <span>Sin envío</span>
+                        </>
+                      )}
+                    </div>
+
                     <div className="order-audit-info">
                       <div className="audit-item">
                         <User size={12} /> {order.createdByUsername || 'Sistema'}
