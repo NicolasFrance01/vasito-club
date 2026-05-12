@@ -6,37 +6,42 @@ import {
 } from 'recharts';
 import { ArrowLeft, TrendingUp, TrendingDown, Percent } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { subDays, startOfWeek, startOfMonth, isAfter, parseISO } from 'date-fns';
+import { subDays, startOfWeek, startOfMonth, isAfter, parseISO, getYear, getMonth } from 'date-fns';
 
 const COLORS = ['#D98A4B', '#2E7D32', '#1565C0', '#d32f2f', '#795548', '#FFB300', '#8E24AA'];
+const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+type TimeFilter = 'day' | 'week' | 'month' | 'all' | 'specific';
 
 const Reports: React.FC = () => {
   const { orders, catalog, finances, isLoading } = useAppData();
-  const [timeFilter, setTimeFilter] = useState<'day' | 'week' | 'month' | 'all'>('all');
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
+  const [selectedYear, setSelectedYear]   = useState<number>(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(null); // null = todo el año
 
-  const filteredOrders = useMemo(() => {
+  /* Years present in order data */
+  const availableYears = useMemo(() => {
+    const years = [...new Set(orders.map(o => getYear(parseISO(o.date))))].sort((a, b) => b - a);
+    return years.length ? years : [new Date().getFullYear()];
+  }, [orders]);
+
+  const applyDateFilter = <T extends { date: string }>(list: T[]): T[] => {
     const now = new Date();
-    if (timeFilter === 'all') return orders;
-    
-    let limit: Date;
-    if (timeFilter === 'day') limit = subDays(now, 1);
-    else if (timeFilter === 'week') limit = startOfWeek(now, { weekStartsOn: 1 });
-    else limit = startOfMonth(now);
+    if (timeFilter === 'day')   return list.filter(o => isAfter(parseISO(o.date), subDays(now, 1)));
+    if (timeFilter === 'week')  return list.filter(o => isAfter(parseISO(o.date), startOfWeek(now, { weekStartsOn: 1 })));
+    if (timeFilter === 'month') return list.filter(o => isAfter(parseISO(o.date), startOfMonth(now)));
+    if (timeFilter === 'specific') {
+      return list.filter(o => {
+        const d = parseISO(o.date);
+        return getYear(d) === selectedYear &&
+               (selectedMonth === null || getMonth(d) === selectedMonth);
+      });
+    }
+    return list;
+  };
 
-    return orders.filter(o => isAfter(parseISO(o.date), limit));
-  }, [orders, timeFilter]);
-
-  const filteredFinances = useMemo(() => {
-    const now = new Date();
-    if (timeFilter === 'all') return finances;
-    
-    let limit: Date;
-    if (timeFilter === 'day') limit = subDays(now, 1);
-    else if (timeFilter === 'week') limit = startOfWeek(now, { weekStartsOn: 1 });
-    else limit = startOfMonth(now);
-
-    return finances.filter(f => isAfter(parseISO(f.date), limit));
-  }, [finances, timeFilter]);
+  const filteredOrders  = useMemo(() => applyDateFilter(orders),   [orders,   timeFilter, selectedYear, selectedMonth]);
+  const filteredFinances = useMemo(() => applyDateFilter(finances), [finances, timeFilter, selectedYear, selectedMonth]);
 
   // Process data for charts
   const { salesByDessert, revenueByDessert, salesByDay, profitAnalysis } = useMemo(() => {
@@ -92,17 +97,59 @@ const Reports: React.FC = () => {
           <h1 className="text-2xl">Reportes de Negocio</h1>
           <p className="text-gray">Visualiza el rendimiento y rentabilidad de Vasito Club.</p>
         </div>
-        <div className="flex gap-2 bg-white p-1 rounded-lg border border-gray-100 shadow-sm">
-          {(['day', 'week', 'month', 'all'] as const).map(f => (
-            <button 
-              key={f}
-              className={`btn btn-sm ${timeFilter === f ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setTimeFilter(f)}
-              style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
-            >
-              {f === 'day' ? 'Hoy' : f === 'week' ? 'Esta Sem.' : f === 'month' ? 'Este Mes' : 'Todo'}
-            </button>
-          ))}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
+          {/* Quick filters */}
+          <div className="flex gap-2 bg-white p-1 rounded-lg border border-gray-100 shadow-sm">
+            {(['day', 'week', 'month', 'all', 'specific'] as TimeFilter[]).map(f => (
+              <button
+                key={f}
+                className={`btn btn-sm ${timeFilter === f ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setTimeFilter(f)}
+                style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
+              >
+                {f === 'day' ? 'Hoy' : f === 'week' ? 'Esta Sem.' : f === 'month' ? 'Este Mes' : f === 'all' ? 'Todo' : 'Mes/Año'}
+              </button>
+            ))}
+          </div>
+
+          {/* Year + month pickers — only when Mes/Año is active */}
+          {timeFilter === 'specific' && (
+            <div className="reports-date-picker animate-fade-in">
+              {/* Year row */}
+              <div className="reports-date-row">
+                {availableYears.map(y => (
+                  <button
+                    key={y}
+                    className={`btn btn-sm ${selectedYear === y ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ padding: '0.3rem 0.7rem', fontSize: '0.82rem', fontWeight: 700 }}
+                    onClick={() => setSelectedYear(y)}
+                  >
+                    {y}
+                  </button>
+                ))}
+              </div>
+              {/* Month row */}
+              <div className="reports-date-row">
+                <button
+                  className={`btn btn-sm ${selectedMonth === null ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ padding: '0.3rem 0.7rem', fontSize: '0.82rem' }}
+                  onClick={() => setSelectedMonth(null)}
+                >
+                  Todos
+                </button>
+                {MONTHS.map((name, idx) => (
+                  <button
+                    key={idx}
+                    className={`btn btn-sm ${selectedMonth === idx ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.82rem' }}
+                    onClick={() => setSelectedMonth(selectedMonth === idx ? null : idx)}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
