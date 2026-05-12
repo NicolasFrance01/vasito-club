@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppData } from '../AppDataContext';
-import { PlusCircle, TrendingUp, Clock, Package, Edit, Trash2, User, History, Truck, MapPin, Search } from 'lucide-react';
+import { PlusCircle, CreditCard, Clock, AlertTriangle, Edit, Trash2, User, History, Truck, MapPin, Search, Package } from 'lucide-react';
 import NewOrderModal from '../components/NewOrderModal';
 import type { Order, PaymentStatus } from '../types';
 import './Dashboard.css';
@@ -10,16 +10,24 @@ const Dashboard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [orderToEdit, setOrderToEdit] = useState<Order | undefined>(undefined);
   const [search, setSearch] = useState('');
+  const [activeFilter, setActiveFilter] = useState<'pendiente-pago' | 'pendientes-entrega' | 'entregado-sin-pago' | null>(null);
 
-  const todaysOrders = orders.filter(o => new Date(o.date).toDateString() === new Date().toDateString());
-  const todaysRevenue = todaysOrders
-    .filter(o => o.paymentStatus === 'Pagado')
-    .reduce((sum, o) => sum + o.total, 0);
-  const pendingOrders = orders.filter(o => ['Pendiente', 'En Elaboración', 'En Envío'].includes(o.status));
+  const pendientePagoOrders    = orders.filter(o => (o.paymentStatus ?? 'Pendiente de pago') === 'Pendiente de pago');
+  const pendientesEntregaOrders = orders.filter(o => ['Pendiente', 'En Elaboración', 'En Envío'].includes(o.status));
+  const entregadoSinPagoOrders = orders.filter(o => (o.paymentStatus ?? '') === 'Entregado sin Pago');
+
+  const toggleFilter = (f: typeof activeFilter) =>
+    setActiveFilter(prev => (prev === f ? null : f));
+
+  const baseOrders =
+    activeFilter === 'pendiente-pago'       ? pendientePagoOrders
+    : activeFilter === 'pendientes-entrega' ? pendientesEntregaOrders
+    : activeFilter === 'entregado-sin-pago' ? entregadoSinPagoOrders
+    : orders;
 
   const q = search.toLowerCase().trim();
   const filteredOrders = q
-    ? orders.filter(o =>
+    ? baseOrders.filter(o =>
         o.customerName.toLowerCase().includes(q) ||
         o.phone?.toLowerCase().includes(q) ||
         o.address?.toLowerCase().includes(q) ||
@@ -29,7 +37,7 @@ const Dashboard: React.FC = () => {
           return name.toLowerCase().includes(q);
         })
       )
-    : orders;
+    : baseOrders;
 
   return (
     <div className="dashboard animate-fade-in">
@@ -45,33 +53,44 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="stats-grid">
-        <div className="card stat-card">
-          <div className="stat-icon bg-accent">
-            <TrendingUp size={24} color="var(--accent-color)" />
+        <button
+          className={`card stat-card filter-card${activeFilter === 'pendiente-pago' ? ' filter-card--active filter-card--yellow' : ''}`}
+          onClick={() => toggleFilter('pendiente-pago')}
+        >
+          <div className="stat-icon" style={{ backgroundColor: 'rgba(251,191,36,0.15)' }}>
+            <CreditCard size={24} color="#92400E" />
           </div>
           <div className="stat-info">
-            <p className="text-gray">Ventas de Hoy (cobradas)</p>
-            <h3>${todaysRevenue.toLocaleString()}</h3>
+            <p className="text-gray">Pendiente de Pago</p>
+            <h3>{pendientePagoOrders.length}</h3>
           </div>
-        </div>
-        <div className="card stat-card">
-          <div className="stat-icon bg-blue">
+        </button>
+
+        <button
+          className={`card stat-card filter-card${activeFilter === 'pendientes-entrega' ? ' filter-card--active filter-card--blue' : ''}`}
+          onClick={() => toggleFilter('pendientes-entrega')}
+        >
+          <div className="stat-icon" style={{ backgroundColor: 'rgba(21,101,192,0.15)' }}>
             <Clock size={24} color="var(--status-prep-text)" />
           </div>
           <div className="stat-info">
             <p className="text-gray">Pedidos Pendientes</p>
-            <h3>{pendingOrders.length}</h3>
+            <h3>{pendientesEntregaOrders.length}</h3>
           </div>
-        </div>
-        <div className="card stat-card">
-          <div className="stat-icon bg-green">
-            <Package size={24} color="var(--status-ready-text)" />
+        </button>
+
+        <button
+          className={`card stat-card filter-card${activeFilter === 'entregado-sin-pago' ? ' filter-card--active filter-card--orange' : ''}`}
+          onClick={() => toggleFilter('entregado-sin-pago')}
+        >
+          <div className="stat-icon" style={{ backgroundColor: 'rgba(234,88,12,0.15)' }}>
+            <AlertTriangle size={24} color="#9A3412" />
           </div>
           <div className="stat-info">
-            <p className="text-gray">Total Pedidos Hoy</p>
-            <h3>{todaysOrders.length}</h3>
+            <p className="text-gray">Entregado sin Pago</p>
+            <h3>{entregadoSinPagoOrders.length}</h3>
           </div>
-        </div>
+        </button>
       </div>
 
       <div className="dashboard-content">
