@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAppData } from '../AppDataContext';
 import { PlusCircle, CreditCard, Clock, AlertTriangle, Edit, Trash2, User, History, Truck, MapPin, Search, Package } from 'lucide-react';
+import { subDays, startOfWeek, startOfMonth, parseISO, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import NewOrderModal from '../components/NewOrderModal';
 import type { Order, PaymentStatus } from '../types';
 import './Dashboard.css';
+
+type DateFilter = 'all' | 'day' | 'week' | 'month' | 'range';
 
 const Dashboard: React.FC = () => {
   const { orders, catalog, deleteOrder, updateOrderStatus, updateOrderPaymentStatus } = useAppData();
@@ -11,23 +14,49 @@ const Dashboard: React.FC = () => {
   const [orderToEdit, setOrderToEdit] = useState<Order | undefined>(undefined);
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<'pendiente-pago' | 'pendientes-entrega' | 'entregado-sin-pago' | null>(null);
+  const [dateFilter, setDateFilter] = useState<DateFilter>('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
-  const pendientePagoOrders    = orders.filter(o => (o.paymentStatus ?? 'Pendiente de pago') === 'Pendiente de pago');
-  const pendientesEntregaOrders = orders.filter(o => ['Pendiente', 'En Elaboración', 'En Envío'].includes(o.status));
-  const entregadoSinPagoOrders = orders.filter(o => (o.paymentStatus ?? '') === 'Entregado sin Pago');
+  /* ── 1. Date filter ───────────────────────────────────────── */
+  const dateFilteredOrders = useMemo(() => {
+    const now = new Date();
+    if (dateFilter === 'day')
+      return orders.filter(o => new Date(o.date).toDateString() === now.toDateString());
+    if (dateFilter === 'week')
+      return orders.filter(o => isAfter(parseISO(o.date), startOfWeek(now, { weekStartsOn: 1 })));
+    if (dateFilter === 'month')
+      return orders.filter(o => isAfter(parseISO(o.date), startOfMonth(now)));
+    if (dateFilter === 'range' && dateFrom && dateTo) {
+      const from = startOfDay(parseISO(dateFrom));
+      const to   = endOfDay(parseISO(dateTo));
+      return orders.filter(o => {
+        const d = parseISO(o.date);
+        return !isBefore(d, from) && !isAfter(d, to);
+      });
+    }
+    return orders;
+  }, [orders, dateFilter, dateFrom, dateTo]);
+
+  /* ── 2. Card filter counts (respect date filter) ─────────── */
+  const pendientePagoOrders     = dateFilteredOrders.filter(o => (o.paymentStatus ?? 'Pendiente de pago') === 'Pendiente de pago');
+  const pendientesEntregaOrders = dateFilteredOrders.filter(o => ['Pendiente', 'En Elaboración', 'En Envío'].includes(o.status));
+  const entregadoSinPagoOrders  = dateFilteredOrders.filter(o => (o.paymentStatus ?? '') === 'Entregado sin Pago');
 
   const toggleFilter = (f: typeof activeFilter) =>
     setActiveFilter(prev => (prev === f ? null : f));
 
-  const baseOrders =
+  /* ── 3. Card filter ───────────────────────────────────────── */
+  const cardFilteredOrders =
     activeFilter === 'pendiente-pago'       ? pendientePagoOrders
     : activeFilter === 'pendientes-entrega' ? pendientesEntregaOrders
     : activeFilter === 'entregado-sin-pago' ? entregadoSinPagoOrders
-    : orders;
+    : dateFilteredOrders;
 
+  /* ── 4. Search ────────────────────────────────────────────── */
   const q = search.toLowerCase().trim();
   const filteredOrders = q
-    ? baseOrders.filter(o =>
+    ? cardFilteredOrders.filter(o =>
         o.customerName.toLowerCase().includes(q) ||
         o.phone?.toLowerCase().includes(q) ||
         o.address?.toLowerCase().includes(q) ||
@@ -37,7 +66,15 @@ const Dashboard: React.FC = () => {
           return name.toLowerCase().includes(q);
         })
       )
-    : baseOrders;
+    : cardFilteredOrders;
+
+  const DATE_BTNS: { key: DateFilter; label: string }[] = [
+    { key: 'all',   label: 'Siempre' },
+    { key: 'day',   label: 'Hoy'     },
+    { key: 'week',  label: 'Semana'  },
+    { key: 'month', label: 'Mes'     },
+    { key: 'range', label: 'Rango'   },
+  ];
 
   return (
     <div className="dashboard animate-fade-in">
@@ -95,6 +132,8 @@ const Dashboard: React.FC = () => {
 
       <div className="dashboard-content">
         <div className="card recent-orders">
+
+          {/* Header: title + search */}
           <div className="orders-list-header">
             <h2 className="text-xl">Todos los Pedidos</h2>
             <div className="search-box">
@@ -109,9 +148,46 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
+          {/* Date filter bar */}
+          <div className="date-filter-bar">
+            <div className="date-filter-btns">
+              {DATE_BTNS.map(({ key, label }) => (
+                <button
+                  key={key}
+                  className={`btn btn-sm ${dateFilter === key ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setDateFilter(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {dateFilter === 'range' && (
+              <div className="date-range-inputs animate-fade-in">
+                <input
+                  type="date"
+                  className="input input-sm"
+                  value={dateFrom}
+                  onChange={e => setDateFrom(e.target.value)}
+                />
+                <span className="text-gray">→</span>
+                <input
+                  type="date"
+                  className="input input-sm"
+                  value={dateTo}
+                  onChange={e => setDateTo(e.target.value)}
+                />
+              </div>
+            )}
+
+            <span className="orders-count text-gray text-sm">
+              {filteredOrders.length} pedido{filteredOrders.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+
           {filteredOrders.length === 0 ? (
             <div className="empty-state">
-              <p>{search ? 'No se encontraron pedidos con esa búsqueda.' : 'No hay pedidos todavía. ¡Empieza creando uno nuevo!'}</p>
+              <p>{search ? 'No se encontraron pedidos con esa búsqueda.' : 'No hay pedidos para los filtros seleccionados.'}</p>
             </div>
           ) : (
             <div className="orders-list">
