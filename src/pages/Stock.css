@@ -156,10 +156,46 @@
 
 .revision-detail-chip {
   font-size: 0.8rem;
-  padding: 0.25rem 0.5rem;
+  padding: 0.3rem 0.6rem;
   background: var(--bg-color);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.revision-detail-chip.chip--up {
+  background: rgba(46, 125, 50, 0.07);
+  border-color: rgba(46, 125, 50, 0.3);
+}
+
+.revision-detail-chip.chip--down {
+  background: rgba(211, 47, 47, 0.07);
+  border-color: rgba(211, 47, 47, 0.3);
+}
+
+.chip-value {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.chip-delta {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.05rem 0.35rem;
+  border-radius: var(--radius-full);
+}
+
+.chip--up .chip-delta {
+  color: #1B5E20;
+  background: rgba(46, 125, 50, 0.15);
+}
+
+.chip--down .chip-delta {
+  color: #B71C1C;
+  background: rgba(211, 47, 47, 0.15);
 }

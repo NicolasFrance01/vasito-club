@@ -323,28 +323,50 @@ const Stock: React.FC = () => {
                 <p className="empty-state">No hay revisiones registradas todavía.</p>
               ) : (
                 <div className="revision-history">
-                  {revisions.map((rev: any) => (
-                    <div key={rev.id} className="revision-history-item">
-                      <div className="revision-history-header">
-                        <span>{format(new Date(rev.date), "d 'de' MMMM, HH:mm'hs'", { locale: es })}</span>
-                        <div className="flex items-center gap-1 text-sm text-gray">
-                          <User size={14} /> {rev.username || 'Sistema'}
-                        </div>
-                      </div>
-                      {rev.notes && <div className="revision-history-notes">{rev.notes}</div>}
-                      <div className="revision-history-details">
-                        {rev.details && Array.isArray(rev.details) && rev.details.map((detail: any, idx: number) => {
-                          const item = stock.find(s => s.id === detail.id);
-                          return (
-                            <div key={idx} className="revision-detail-chip">
-                              <span>{item?.name || 'Insumo'}:</span>
-                              <strong>{detail.quantity} {item?.unit}</strong>
+                  {[...revisions]
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                    .map((rev: any, revIdx: number, sorted: any[]) => {
+                      /* Build lookup of previous (older) revision quantities */
+                      const prevRev = sorted[revIdx + 1];
+                      const prevQtyMap: Record<string, number> = {};
+                      if (prevRev?.details && Array.isArray(prevRev.details)) {
+                        prevRev.details.forEach((d: any) => { prevQtyMap[d.id] = d.quantity; });
+                      }
+
+                      return (
+                        <div key={rev.id} className="revision-history-item">
+                          <div className="revision-history-header">
+                            <span>{format(new Date(rev.date), "d 'de' MMMM, HH:mm'hs'", { locale: es })}</span>
+                            <div className="flex items-center gap-1 text-sm text-gray">
+                              <User size={14} /> {rev.username || 'Sistema'}
                             </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
+                          </div>
+                          {rev.notes && <div className="revision-history-notes">{rev.notes}</div>}
+                          <div className="revision-history-details">
+                            {rev.details && Array.isArray(rev.details) && rev.details.map((detail: any, idx: number) => {
+                              const item  = stock.find(s => s.id === detail.id);
+                              const prev  = prevQtyMap[detail.id];
+                              const delta = prev !== undefined ? detail.quantity - prev : null;
+                              const chipMod = delta === null || delta === 0 ? '' : delta > 0 ? ' chip--up' : ' chip--down';
+
+                              return (
+                                <div key={idx} className={`revision-detail-chip${chipMod}`}>
+                                  <span>{item?.name || 'Insumo'}</span>
+                                  <div className="chip-value">
+                                    {delta !== null && delta !== 0 && (
+                                      <span className="chip-delta">
+                                        {delta > 0 ? '↑' : '↓'}{Math.abs(delta)}{item?.unit ? ` ${item.unit}` : ''}
+                                      </span>
+                                    )}
+                                    <strong>{detail.quantity}{item?.unit ? ` ${item.unit}` : ''}</strong>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               )}
             </div>
