@@ -4,9 +4,10 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
-import { ArrowLeft, TrendingUp, TrendingDown, Percent } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, Percent, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { subDays, startOfWeek, startOfMonth, isAfter, parseISO, getYear, getMonth } from 'date-fns';
+import { subDays, startOfWeek, startOfMonth, isAfter, parseISO, getYear, getMonth, getWeek, format, startOfDay, startOfMonth as soMonth } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 const COLORS = ['#D98A4B', '#2E7D32', '#1565C0', '#d32f2f', '#795548', '#FFB300', '#8E24AA'];
 const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
@@ -17,7 +18,8 @@ const Reports: React.FC = () => {
   const { orders, catalog, finances, isLoading } = useAppData();
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const [selectedYear, setSelectedYear]   = useState<number>(new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState<number | null>(null); // null = todo el año
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+  const [chartGrouping, setChartGrouping] = useState<'day' | 'week' | 'month'>('month');
 
   /* Years present in order data */
   const availableYears = useMemo(() => {
@@ -42,6 +44,43 @@ const Reports: React.FC = () => {
 
   const filteredOrders  = useMemo(() => applyDateFilter(orders),   [orders,   timeFilter, selectedYear, selectedMonth]);
   const filteredFinances = useMemo(() => applyDateFilter(finances), [finances, timeFilter, selectedYear, selectedMonth]);
+
+  /* ── Historic sales grouped by day / week / month ── */
+  const { historicSalesData, totalUnitsSold } = useMemo(() => {
+    const grouped = new Map<string, { sortKey: number; total: number }>();
+
+    filteredOrders.forEach(order => {
+      const d = parseISO(order.date);
+      let label: string;
+      let sortKey: number;
+
+      if (chartGrouping === 'day') {
+        label   = format(d, 'dd/MM/yy');
+        sortKey = startOfDay(d).getTime();
+      } else if (chartGrouping === 'week') {
+        const ws = startOfWeek(d, { weekStartsOn: 1 });
+        label   = `S${getWeek(d, { weekStartsOn: 1 })} ${getYear(d)}`;
+        sortKey = ws.getTime();
+      } else {
+        label   = format(d, 'MMM yy', { locale: es });
+        sortKey = soMonth(d).getTime();
+      }
+
+      const qty = order.items.reduce((s, i) => s + i.quantity, 0);
+      const existing = grouped.get(label);
+      if (existing) existing.total += qty;
+      else grouped.set(label, { sortKey, total: qty });
+    });
+
+    const sorted = [...grouped.entries()]
+      .sort((a, b) => a[1].sortKey - b[1].sortKey)
+      .map(([label, { total }]) => ({ período: label, Postres: total }));
+
+    const totalUnits = filteredOrders.reduce((s, o) =>
+      s + o.items.reduce((si, i) => si + i.quantity, 0), 0);
+
+    return { historicSalesData: sorted, totalUnitsSold: totalUnits };
+  }, [filteredOrders, chartGrouping]);
 
   // Process data for charts
   const { salesByDessert, revenueByDessert, salesByDay, profitAnalysis } = useMemo(() => {
@@ -181,6 +220,15 @@ const Reports: React.FC = () => {
             <h3>${profitAnalysis[1].value.toLocaleString()}</h3>
           </div>
         </div>
+        <div className="card stat-card">
+          <div className="stat-icon" style={{ backgroundColor: 'rgba(217, 138, 75, 0.1)' }}>
+            <ShoppingBag size={24} color="var(--accent-color)" />
+          </div>
+          <div className="stat-info">
+            <p className="text-gray text-sm">Postres Vendidos</p>
+            <h3>{totalUnitsSold.toLocaleString()} u.</h3>
+          </div>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '2rem' }}>
@@ -283,6 +331,36 @@ const Reports: React.FC = () => {
           </div>
         </div>
 
+      </div>
+
+      {/* Ventas Históricas */}
+      <div className="card">
+        <div className="flex justify-between items-center mb-6" style={{ flexWrap: 'wrap', gap: '0.75rem' }}>
+          <h2 className="text-xl">Ventas Históricas</h2>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {(['day', 'week', 'month'] as const).map(g => (
+              <button
+                key={g}
+                className={`btn btn-sm ${chartGrouping === g ? 'btn-primary' : 'btn-secondary'}`}
+                style={{ padding: '0.3rem 0.8rem', fontSize: '0.82rem' }}
+                onClick={() => setChartGrouping(g)}
+              >
+                {g === 'day' ? 'Días' : g === 'week' ? 'Semanas' : 'Meses'}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div style={{ width: '100%', height: 300 }}>
+          <ResponsiveContainer>
+            <BarChart data={historicSalesData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="período" tick={{ fontSize: 12 }} />
+              <YAxis allowDecimals={false} />
+              <RechartsTooltip formatter={(val: any) => [`${val} u.`, 'Postres']} />
+              <Bar dataKey="Postres" fill="var(--accent-color)" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );

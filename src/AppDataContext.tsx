@@ -26,6 +26,7 @@ interface AppDataState {
   updateOrder: (order: Order) => Promise<void>;
   deleteOrder: (id: string) => Promise<void>;
   refreshStock: () => Promise<void>;
+  deleteRevision: (id: string) => Promise<void>;
   revisions: any[];
   isLoading: boolean;
 }
@@ -346,10 +347,19 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  const deleteRevision = async (id: string) => {
+    try {
+      const res = await fetch(`/api/stock-revisions?id=${id}`, { method: 'DELETE' });
+      if (res.ok) setRevisions(prev => prev.filter((r: any) => r.id !== id));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <AppDataContext.Provider value={{
       orders, catalog, stock, finances, customers, recipes, revisions,
-      addOrder, updateOrderStatus, updateOrderPaymentStatus, updateOrder, deleteOrder, addCatalogItem, updateCatalogItem, deleteCatalogItem, updateStock, updateStockItem, deleteStockItem, addStockItem, addFinanceRecord, updateFinanceRecord, deleteFinanceRecord, addRecipe, refreshStock, isLoading
+      addOrder, updateOrderStatus, updateOrderPaymentStatus, updateOrder, deleteOrder, addCatalogItem, updateCatalogItem, deleteCatalogItem, updateStock, updateStockItem, deleteStockItem, addStockItem, addFinanceRecord, updateFinanceRecord, deleteFinanceRecord, addRecipe, refreshStock, deleteRevision, isLoading
     }}>
       {children}
     </AppDataContext.Provider>

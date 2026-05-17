@@ -46,5 +46,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
+  if (req.method === 'DELETE') {
+    try {
+      const { id } = req.query;
+      await prisma.stockRevision.delete({ where: { id: String(id) } });
+      return res.status(200).json({ success: true });
+    } catch (error) {
+      return res.status(500).json({ error: 'Failed to delete revision' });
+    }
+  }
+
   return res.status(405).json({ message: 'Method Not Allowed' });
 }

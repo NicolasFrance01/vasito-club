@@ -21,7 +21,7 @@ const Stock: React.FC = () => {
   const [revisionNotes, setRevisionNotes] = useState('');
   const [isSavingRevision, setIsSavingRevision] = useState(false);
 
-  const { stock, updateStock, updateStockItem, deleteStockItem, addStockItem, isLoading, refreshStock, revisions } = useAppData();
+  const { stock, updateStock, updateStockItem, deleteStockItem, addStockItem, isLoading, refreshStock, revisions, deleteRevision } = useAppData();
   const { user: currentUser } = useAuth();
 
   const handleUpdateQuantity = (id: string, newQuantity: number) => {
@@ -337,8 +337,20 @@ const Stock: React.FC = () => {
                         <div key={rev.id} className="revision-history-item">
                           <div className="revision-history-header">
                             <span>{format(new Date(rev.date), "d 'de' MMMM, HH:mm'hs'", { locale: es })}</span>
-                            <div className="flex items-center gap-1 text-sm text-gray">
+                            <div className="flex items-center gap-2 text-sm text-gray">
                               <User size={14} /> {rev.username || 'Sistema'}
+                              <button
+                                className="btn btn-danger icon-btn"
+                                style={{ padding: '0.2rem 0.4rem' }}
+                                title="Eliminar revisión"
+                                onClick={() => {
+                                  if (window.confirm('¿Eliminar esta revisión del historial?')) {
+                                    deleteRevision(rev.id);
+                                  }
+                                }}
+                              >
+                                <Trash2 size={13} />
+                              </button>
                             </div>
                           </div>
                           {rev.notes && <div className="revision-history-notes">{rev.notes}</div>}
